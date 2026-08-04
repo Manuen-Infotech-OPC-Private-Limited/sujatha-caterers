@@ -1,12 +1,200 @@
+/* ---------------------------------------------------------------------------
+   Tailwind is imported WITHOUT Preflight on purpose.
+   Preflight strips heading sizes, list bullets and button styling globally,
+   which would wreck the 22 pages still running on their own CSS files. The
+   utilities work fine without it. Once every page is converted, swap the four
+   lines below for a plain `@import "tailwindcss";` and delete this comment.
+--------------------------------------------------------------------------- */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Pulled in here rather than as a JS import so it lands in the `components`
+   layer. Unlayered CSS outranks every layered rule, so left as-is it would
+   beat the Tailwind utilities in Toaster.jsx and the custom skin would
+   silently do nothing. */
+@import "react-toastify/dist/ReactToastify.css" layer(components);
+
+@source "../index.html";
+@source "./**/*.{js,jsx}";
+
+/* ---------------------------------------------------------------------------
+   Design tokens — warm & appetite-led.
+   Cream canvas, charcoal ink, brand red as the single action colour.
+--------------------------------------------------------------------------- */
+@theme {
+  /* Brand red, ramped from the existing #E63946 so the hue doesn't shift. */
+  --color-brand-50: #fef3f3;
+  --color-brand-100: #fde4e6;
+  --color-brand-200: #facdd1;
+  --color-brand-300: #f5a8af;
+  --color-brand-400: #ee7a85;
+  --color-brand-500: #e63946;
+  --color-brand-600: #d02335;
+  --color-brand-700: #af1a2b;
+  --color-brand-800: #911a28;
+  --color-brand-900: #7a1b27;
+  --color-brand-950: #430a11;
+
+  /* Warm neutrals — deliberately warmer than Tailwind's stone. */
+  --color-sand-50: #fdfbf7;
+  --color-sand-100: #f7f3ec;
+  --color-sand-200: #efe8dd;
+  --color-sand-300: #e0d6c7;
+  --color-sand-400: #b9ac9a;
+  --color-sand-500: #8c8072;
+  --color-sand-600: #6b6155;
+  --color-sand-700: #524a41;
+  --color-sand-800: #38322c;
+  --color-sand-900: #1c1917;
+  --color-sand-950: #0f0d0c;
+
+  /* Saffron — secondary accent for badges, veg markers, highlights. */
+  --color-saffron-50: #fef8ec;
+  --color-saffron-100: #fdefd0;
+  --color-saffron-300: #f7ce7a;
+  --color-saffron-500: #e9a22b;
+  --color-saffron-600: #c9821a;
+  --color-saffron-700: #a2620f;
+
+  /* Semantic */
+  --color-success-50: #f0fdf4;
+  --color-success-500: #16a34a;
+  --color-success-700: #15803d;
+  --color-danger-500: #e63946;
+  --color-danger-700: #af1a2b;
+
+  /* Type */
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, sans-serif;
+  --font-display: "Belleza", Georgia, "Times New Roman", serif;
+
+  /* Warm-tinted shadows — neutral grey shadows read cold on cream. */
+  --shadow-card: 0 1px 2px rgb(28 25 23 / 0.04), 0 8px 24px -8px rgb(28 25 23 / 0.1);
+  --shadow-lift: 0 2px 4px rgb(28 25 23 / 0.05), 0 16px 40px -12px rgb(28 25 23 / 0.18);
+  --shadow-brand: 0 8px 24px -8px rgb(230 57 70 / 0.45);
+
+  /* Motion */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-fade-up: fade-up 0.5s var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 0.4s var(--ease-out-soft) both;
+  --animate-scale-in: scale-in 0.35s var(--ease-spring) both;
+  --animate-shake: shake 0.4s ease-in-out;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.94); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-6px); }
+    40% { transform: translateX(6px); }
+    60% { transform: translateX(-4px); }
+    80% { transform: translateX(4px); }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Global base
+--------------------------------------------------------------------------- */
 body {
   margin: 0;
   padding: 0;
-  font-family: 'Belleza', sans-serif;
+  /* Was 'Belleza' — a display face with no UI weights, which is why every
+     button, label and input across the app read as decorative. Belleza is
+     now reserved for headings only (below). */
+  font-family: var(--font-sans);
+  color: var(--color-sand-900);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
+/* Keeps the brand's serif character on pages not yet redesigned. Converted
+   pages set the display face explicitly, so this is only a fallback. */
+h1, h2, h3 {
+  font-family: var(--font-display);
+}
+
+/* ---------------------------------------------------------------------------
+   Opt-in form reset for redesigned pages.
+
+   Preflight is off (see top of file), so form controls still render with
+   native browser chrome — a stray 1px #ccc border inside every input. This
+   restores the parts of Preflight the new pages need, scoped to
+   `data-ui="v2"` so the 22 legacy pages keep rendering exactly as they do
+   today. It lives in @layer base, so every Tailwind utility still wins
+   regardless of specificity.
+
+   When the last page is converted: delete this block, drop the data-ui
+   attributes, and switch to a plain `@import "tailwindcss"`.
+--------------------------------------------------------------------------- */
+@layer base {
+  [data-ui='v2'] button,
+  [data-ui='v2'] input,
+  [data-ui='v2'] select,
+  [data-ui='v2'] textarea {
+    appearance: none;
+    -webkit-appearance: none;
+    font: inherit;
+    color: inherit;
+    background-color: transparent;
+    background-image: none;
+    border: 0;
+    border-radius: 0;
+    margin: 0;
+    padding: 0;
+  }
+
+  [data-ui='v2'] button {
+    cursor: pointer;
+  }
+
+  [data-ui='v2'] button:disabled {
+    cursor: not-allowed;
+  }
+
+  [data-ui='v2'] input::placeholder,
+  [data-ui='v2'] textarea::placeholder {
+    color: var(--color-sand-400);
+    opacity: 1;
+  }
+
+  [data-ui='v2'] img,
+  [data-ui='v2'] svg {
+    display: block;
+  }
+
+  [data-ui='v2'] img {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
 html {
   scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

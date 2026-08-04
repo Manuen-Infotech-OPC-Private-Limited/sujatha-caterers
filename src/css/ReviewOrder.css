@@ -188,11 +188,14 @@ label:has(input[type="radio"]:checked) {
   color: var(--primary-red);
 }
 
-/* Inputs */
-input[type="number"],
-input[type="tel"],
-input[type="text"],
-input[type="date"] {
+/* Inputs
+   Scoped to .review-order. These were previously unscoped element selectors,
+   and because App.js imports ReviewOrder eagerly they were restyling every
+   input on every page in the app. */
+.review-order input[type="number"],
+.review-order input[type="tel"],
+.review-order input[type="text"],
+.review-order input[type="date"] {
   padding: 0.75rem 1rem;
   width: 100%;
   border: 1.5px solid #ccc;
@@ -204,7 +207,7 @@ input[type="date"] {
   margin-bottom: 0.8rem;
 }
 
-input:focus {
+.review-order input:focus {
   border-color: var(--primary-red);
   box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.2);
   outline: none;
