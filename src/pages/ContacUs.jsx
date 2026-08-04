@@ -1,15 +1,12 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import {
   FaPhoneAlt,
   FaWhatsapp,
   FaFacebook,
   FaInstagram,
   FaEnvelope,
-  FaClock,
   FaMapMarkerAlt,
-  FaShieldAlt,
 } from 'react-icons/fa';
 import { testimonials } from '../data/testimonials';
 import PageShell, { PageHero } from '../components/ui/PageShell';
@@ -34,43 +31,39 @@ const EVENTS_WE_CATER = [
   'Festival Catering',
 ];
 
-const CONTACT_CARDS = [
+/* Primary contact channels, ordered by immediacy. */
+const CHANNELS = [
   {
     icon: FaPhoneAlt,
-    title: 'Phone',
-    lines: [{ text: '+91 97035 05356', href: 'tel:+919703505356' }, { text: 'Available 24/7' }],
+    label: 'Call us',
+    value: '+91 97035 05356',
+    note: 'Available 24/7',
+    href: 'tel:+919703505356',
+    tone: 'bg-brand-50 text-brand-600',
   },
   {
     icon: FaWhatsapp,
-    title: 'WhatsApp',
-    lines: [
-      { text: 'Chat now', href: 'https://wa.me/919703505356', external: true },
-      { text: 'Instant support' },
-    ],
+    label: 'WhatsApp',
+    value: 'Start a chat',
+    note: 'Fastest response',
+    href: 'https://wa.me/919703505356',
+    external: true,
+    tone: 'bg-success-50 text-success-700',
   },
   {
     icon: FaEnvelope,
-    title: 'Email',
-    lines: [
-      { text: 'sujathameals@gmail.com', href: 'mailto:sujathameals@gmail.com' },
-      { text: 'Replies within 12 hours' },
-    ],
-  },
-  {
-    icon: FaClock,
-    title: 'Business hours',
-    lines: [{ text: 'Monday – Sunday' }, { text: '8:00 AM – 9:00 PM' }, { text: 'Applicable to Meal Box', muted: true }],
-  },
-  {
-    icon: FaMapMarkerAlt,
-    title: 'Address',
-    lines: [
-      {
-        text: 'Opposite Meenakshi Palms, Tarakarama Nagar, Srinivasa Nagar Colony, Guntur — 522006',
-      },
-    ],
+    label: 'Email',
+    value: 'sujathameals@gmail.com',
+    note: 'Replies within 12 hours',
+    href: 'mailto:sujathameals@gmail.com',
+    tone: 'bg-saffron-50 text-saffron-700',
   },
 ];
+
+const ADDRESS =
+  'Opposite Meenakshi Palms, Tarakarama Nagar, Srinivasa Nagar Colony, Guntur — 522006';
+const DIRECTIONS_URL =
+  'https://www.google.com/maps/dir/?api=1&destination=Sujatha+Meals+Contractors,+Guntur';
 
 const inputBase =
   'w-full rounded-xl border-2 border-sand-300 bg-white px-4 py-3.5 text-[1.0625rem] text-sand-900 outline-none transition-all duration-200 placeholder:text-sand-400 hover:border-sand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15';
@@ -92,12 +85,11 @@ const ContactUs = () => {
   const [index, setIndex] = useState(0);
 
   const api = process.env.REACT_APP_API_URL;
-  const navigate = useNavigate();
 
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % testimonials.length);
-    }, 5000);
+    }, 6000);
     return () => clearInterval(timer);
   }, []);
 
@@ -210,319 +202,344 @@ const ContactUs = () => {
     }
   };
 
+  const quote = testimonials[index];
+
   return (
     <PageShell>
-      <PageHero eyebrow="Get in touch" title="We'd love to hear from you">
-        Whether you're planning a wedding, festive gathering or corporate event,
-        we're here to bring your vision to life with exquisite South Indian
-        vegetarian cuisine.
+      <PageHero compact eyebrow="Get in touch" title="Let's plan your event">
+        Call us for something urgent, or send a few details and our team will
+        come back to you with a plan.
       </PageHero>
 
-      {/* ---------------- CONTACT CARDS ---------------- */}
-      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {CONTACT_CARDS.map(({ icon: Icon, title, lines }) => (
-            <div
-              key={title}
-              className="rounded-2xl border border-sand-200 bg-white p-6 shadow-card transition-shadow duration-300 hover:shadow-lift"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-                <Icon className="h-5 w-5" />
-              </span>
-              <h3 className="mt-4 text-lg font-semibold text-sand-900">{title}</h3>
-              <div className="mt-2 space-y-1">
-                {lines.map((line) => (
-                  <p
-                    key={line.text}
-                    className={`text-[0.9375rem] leading-relaxed ${
-                      line.muted ? 'text-sand-500 italic' : 'text-sand-600'
-                    }`}
-                  >
-                    {line.href ? (
-                      <a
-                        href={line.href}
-                        target={line.external ? '_blank' : undefined}
-                        rel={line.external ? 'noopener noreferrer' : undefined}
-                        className="font-semibold text-brand-600 underline-offset-4 transition-colors hover:text-brand-700 hover:underline"
-                      >
-                        {line.text}
-                      </a>
-                    ) : (
-                      line.text
-                    )}
-                  </p>
-                ))}
-              </div>
-            </div>
-          ))}
+      {/* ============ RAIL + FORM ============ */}
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:py-16">
+        <div className="grid gap-8 lg:grid-cols-[21rem_1fr] lg:gap-12">
+          {/* ---------- contact rail ---------- */}
+          <aside className="space-y-3 lg:sticky lg:top-24 lg:self-start">
+            <h2 className="text-sm font-semibold tracking-wide text-sand-500 uppercase">
+              Talk to us
+            </h2>
 
-          {/* social */}
-          <div className="rounded-2xl border border-sand-200 bg-white p-6 shadow-card">
-            <h3 className="text-lg font-semibold text-sand-900">Follow us</h3>
-            <div className="mt-4 flex gap-3">
+            {CHANNELS.map(({ icon: Icon, label, value, note, href, external, tone }) => (
+              <a
+                key={label}
+                href={href}
+                target={external ? '_blank' : undefined}
+                rel={external ? 'noopener noreferrer' : undefined}
+                className="group flex items-center gap-4 rounded-2xl border border-sand-200 bg-white p-4 shadow-card transition-all duration-200 hover:-translate-y-0.5 hover:border-sand-300 hover:shadow-lift focus:outline-none focus-visible:ring-4 focus-visible:ring-brand-500/25"
+              >
+                <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${tone}`}>
+                  <Icon className="h-5 w-5" />
+                </span>
+
+                <span className="min-w-0 flex-1">
+                  <span className="block text-sm text-sand-500">{label}</span>
+                  <span className="block truncate font-semibold text-sand-900">{value}</span>
+                  <span className="block text-xs text-sand-500">{note}</span>
+                </span>
+
+                <svg
+                  viewBox="0 0 20 20"
+                  className="h-4 w-4 shrink-0 text-sand-400 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-brand-500"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M7 4l6 6-6 6" />
+                </svg>
+              </a>
+            ))}
+
+            <div className="rounded-2xl border border-sand-200 bg-white p-4 shadow-card">
+              <p className="text-sm text-sand-500">Business hours</p>
+              <p className="mt-0.5 font-semibold text-sand-900">Mon – Sun, 8:00 AM – 9:00 PM</p>
+              <p className="mt-1 text-xs text-sand-500 italic">Applicable to Meal Box</p>
+            </div>
+
+            <div className="flex items-center gap-3 rounded-2xl border border-sand-200 bg-white p-4 shadow-card">
+              <p className="flex-1 text-sm text-sand-600">Follow us</p>
               <a
                 href="https://www.facebook.com/share/1BCf3bKKyk/?mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-sand-100 text-sand-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-sand-100 text-sand-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
               >
-                <FaFacebook className="h-5 w-5" />
+                <FaFacebook className="h-4 w-4" />
               </a>
               <a
                 href="https://instagram.com/sujathacaterers"
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Instagram"
-                className="flex h-11 w-11 items-center justify-center rounded-xl bg-sand-100 text-sand-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
+                className="flex h-9 w-9 items-center justify-center rounded-lg bg-sand-100 text-sand-700 transition-colors hover:bg-brand-50 hover:text-brand-600"
               >
-                <FaInstagram className="h-5 w-5" />
+                <FaInstagram className="h-4 w-4" />
               </a>
             </div>
-          </div>
-        </div>
-      </section>
+          </aside>
 
-      {/* ---------------- CONSULTATION ---------------- */}
-      <section className="border-y border-sand-200 bg-sand-100/60">
-        <div className="mx-auto max-w-3xl px-5 py-14 sm:px-8 lg:py-20">
-          <h2 className="font-display text-4xl text-sand-900">Request a consultation</h2>
-          <p className="mt-3 text-[1.0625rem] text-sand-600">
-            Share a few details and our team will get back to you shortly.
-          </p>
+          {/* ---------- consultation form ---------- */}
+          <div>
+            <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-card sm:p-8">
+              <h2 className="font-display text-3xl text-sand-900">Request a consultation</h2>
+              <p className="mt-2 text-[0.9375rem] text-sand-600">
+                Share a few details and our team will get back to you shortly.
+              </p>
 
-          {/* serviceability check */}
-          <div className="mt-8 rounded-2xl border border-sand-200 bg-white p-5">
-            {serviceInfo ? (
-              <div className="flex items-start gap-3">
-                <span
-                  className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
-                    serviceInfo.isServiceArea
-                      ? 'bg-success-50 text-success-700'
-                      : 'bg-saffron-50 text-saffron-700'
-                  }`}
-                >
-                  <FaMapMarkerAlt className="h-3 w-3" />
-                </span>
-                <div>
-                  <p className="text-[0.9375rem] font-semibold text-sand-900">
-                    {serviceInfo.isServiceArea
-                      ? `We serve your area (${serviceInfo.distanceKm} km away)`
-                      : `Outside our regular area (${serviceInfo.distanceKm} km away)`}
-                  </p>
-                  <p className="mt-0.5 text-sm text-sand-600">
-                    {serviceInfo.isServiceArea
-                      ? 'Both online and offline consultations are available.'
-                      : 'Online consultation only. Offline visits need special approval.'}
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-[0.9375rem] text-sand-600">
-                  Check whether we serve your area before booking.
-                </p>
-                <Button
-                  variant="secondary"
-                  className="shrink-0 sm:w-auto sm:px-5 sm:py-2.5 sm:text-[0.9375rem]"
-                  onClick={checkServiceArea}
-                  loading={checkingArea}
-                  loadingText="Checking…"
-                >
-                  Check my location
-                </Button>
-              </div>
-            )}
-          </div>
-
-          <form className="mt-6 space-y-5" noValidate onSubmit={handleSubmit}>
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field
-                id="c-name"
-                label="Full name"
-                placeholder="Your name"
-                value={form.name}
-                onChange={set('name')}
-                error={errors.name}
-              />
-              <Field
-                id="c-phone"
-                label="Phone number"
-                type="tel"
-                inputMode="numeric"
-                prefix="+91"
-                placeholder="98765 43210"
-                value={form.phone}
-                onChange={set('phone')}
-                error={errors.phone}
-              />
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field
-                id="c-email"
-                label="Email"
-                type="email"
-                placeholder="you@example.com"
-                value={form.email}
-                onChange={set('email')}
-                error={errors.email}
-                hint="Optional"
-              />
-
-              <div>
-                <label htmlFor="c-event" className="mb-2 block text-sm font-semibold text-sand-800">
-                  Event type
-                </label>
-                <select
-                  id="c-event"
-                  value={form.eventType}
-                  onChange={set('eventType')}
-                  className={`${inputBase} ${errors.eventType ? 'border-brand-400' : ''}`}
-                >
-                  <option value="">Select event type</option>
-                  {EVENT_TYPES.map((t) => (
-                    <option key={t}>{t}</option>
-                  ))}
-                </select>
-                {errors.eventType && (
-                  <p className="mt-1.5 text-sm font-medium text-brand-600">{errors.eventType}</p>
-                )}
-              </div>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2">
-              <Field
-                id="c-guests"
-                label="Approximate guests"
-                inputMode="numeric"
-                placeholder="e.g. 250"
-                value={form.guests}
-                onChange={set('guests')}
-                error={errors.guests}
-              />
-
-              <div>
-                <label htmlFor="c-type" className="mb-2 block text-sm font-semibold text-sand-800">
-                  Consultation type
-                </label>
-                <select
-                  id="c-type"
-                  value={form.type}
-                  onChange={set('type')}
-                  disabled={!serviceInfo}
-                  className={`${inputBase} disabled:cursor-not-allowed disabled:bg-sand-100 disabled:text-sand-500 ${
-                    errors.type ? 'border-brand-400' : ''
-                  }`}
-                >
-                  <option value="">
-                    {serviceInfo ? 'Select type' : 'Check your location first'}
-                  </option>
-                  {serviceInfo?.isServiceArea && <option value="offline">Offline</option>}
-                  {serviceInfo && <option value="online">Online</option>}
-                </select>
-                {errors.type && (
-                  <p className="mt-1.5 text-sm font-medium text-brand-600">{errors.type}</p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="c-notes" className="mb-2 block text-sm font-semibold text-sand-800">
-                Additional notes
-              </label>
-              <textarea
-                id="c-notes"
-                rows={4}
-                placeholder="Anything else we should know?"
-                value={form.notes}
-                onChange={set('notes')}
-                className={`${inputBase} resize-y text-[0.9375rem]`}
-              />
-            </div>
-
-            <Button type="submit" loading={submitting} loadingText="Submitting…">
-              Request consultation
-            </Button>
-          </form>
-        </div>
-      </section>
-
-      {/* ---------------- EVENTS ---------------- */}
-      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
-        <h2 className="font-display text-4xl text-sand-900">Events we cater</h2>
-        <ul className="mt-8 flex flex-wrap gap-3">
-          {EVENTS_WE_CATER.map((e) => (
-            <li
-              key={e}
-              className="rounded-full border border-sand-200 bg-white px-4 py-2 text-[0.9375rem] font-medium text-sand-700 shadow-card"
-            >
-              {e}
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      {/* ---------------- TESTIMONIALS ---------------- */}
-      <section className="border-t border-sand-200 bg-sand-100/60">
-        <div className="mx-auto max-w-3xl px-5 py-14 text-center sm:px-8">
-          <h2 className="font-display text-4xl text-sand-900">What our clients say</h2>
-
-          <figure className="mt-8 rounded-3xl border border-sand-200 bg-white p-8 shadow-card">
-            <blockquote
-              key={index}
-              className="animate-fade-in font-display text-xl leading-relaxed text-sand-800 sm:text-2xl"
-            >
-              “{testimonials[index].message}”
-            </blockquote>
-            <figcaption className="mt-5 text-[0.9375rem] text-sand-600">
-              — <span className="font-semibold text-sand-900">{testimonials[index].name}</span>,{' '}
-              {testimonials[index].location}
-            </figcaption>
-          </figure>
-
-          <div className="mt-6 flex justify-center gap-2">
-            {testimonials.map((t, i) => (
-              <button
-                key={t.name + t.location}
-                onClick={() => setIndex(i)}
-                aria-label={`Show testimonial ${i + 1}`}
-                aria-current={i === index}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  i === index ? 'w-6 bg-brand-500' : 'w-2 bg-sand-300 hover:bg-sand-400'
+              {/* serviceability gate */}
+              <div
+                className={`mt-6 rounded-2xl border p-4 ${
+                  serviceInfo
+                    ? serviceInfo.isServiceArea
+                      ? 'border-success-500/30 bg-success-50'
+                      : 'border-saffron-500/30 bg-saffron-50'
+                    : 'border-sand-200 bg-sand-100/70'
                 }`}
-              />
-            ))}
+              >
+                {serviceInfo ? (
+                  <div className="flex items-start gap-3">
+                    <span
+                      className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${
+                        serviceInfo.isServiceArea
+                          ? 'bg-success-500 text-white'
+                          : 'bg-saffron-500 text-white'
+                      }`}
+                    >
+                      <FaMapMarkerAlt className="h-3 w-3" />
+                    </span>
+                    <div>
+                      <p className="text-[0.9375rem] font-semibold text-sand-900">
+                        {serviceInfo.isServiceArea
+                          ? `We serve your area (${serviceInfo.distanceKm} km away)`
+                          : `Outside our regular area (${serviceInfo.distanceKm} km away)`}
+                      </p>
+                      <p className="mt-0.5 text-sm text-sand-600">
+                        {serviceInfo.isServiceArea
+                          ? 'Both online and offline consultations are available.'
+                          : 'Online consultation only. Offline visits need special approval.'}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <p className="text-[0.9375rem] text-sand-700">
+                      First, let's check whether we serve your area.
+                    </p>
+                    <Button
+                      variant="secondary"
+                      className="shrink-0 sm:w-auto sm:px-5 sm:py-2.5 sm:text-[0.9375rem]"
+                      onClick={checkServiceArea}
+                      loading={checkingArea}
+                      loadingText="Checking…"
+                    >
+                      <FaMapMarkerAlt className="h-3.5 w-3.5" />
+                      Check my location
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              <form className="mt-6 space-y-5" noValidate onSubmit={handleSubmit}>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field
+                    id="c-name"
+                    label="Full name"
+                    placeholder="Your name"
+                    value={form.name}
+                    onChange={set('name')}
+                    error={errors.name}
+                  />
+                  <Field
+                    id="c-phone"
+                    label="Phone number"
+                    type="tel"
+                    inputMode="numeric"
+                    prefix="+91"
+                    placeholder="98765 43210"
+                    value={form.phone}
+                    onChange={set('phone')}
+                    error={errors.phone}
+                  />
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field
+                    id="c-email"
+                    label="Email"
+                    type="email"
+                    placeholder="you@example.com"
+                    value={form.email}
+                    onChange={set('email')}
+                    error={errors.email}
+                    hint="Optional"
+                  />
+
+                  <div>
+                    <label htmlFor="c-event" className="mb-2 block text-sm font-semibold text-sand-800">
+                      Event type
+                    </label>
+                    <select
+                      id="c-event"
+                      value={form.eventType}
+                      onChange={set('eventType')}
+                      className={`${inputBase} ${errors.eventType ? 'border-brand-400' : ''}`}
+                    >
+                      <option value="">Select event type</option>
+                      {EVENT_TYPES.map((t) => (
+                        <option key={t}>{t}</option>
+                      ))}
+                    </select>
+                    {errors.eventType && (
+                      <p className="mt-1.5 text-sm font-medium text-brand-600">{errors.eventType}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <Field
+                    id="c-guests"
+                    label="Approximate guests"
+                    inputMode="numeric"
+                    placeholder="e.g. 250"
+                    value={form.guests}
+                    onChange={set('guests')}
+                    error={errors.guests}
+                  />
+
+                  <div>
+                    <label htmlFor="c-type" className="mb-2 block text-sm font-semibold text-sand-800">
+                      Consultation type
+                    </label>
+                    <select
+                      id="c-type"
+                      value={form.type}
+                      onChange={set('type')}
+                      disabled={!serviceInfo}
+                      className={`${inputBase} disabled:cursor-not-allowed disabled:bg-sand-100 disabled:text-sand-500 ${
+                        errors.type ? 'border-brand-400' : ''
+                      }`}
+                    >
+                      <option value="">
+                        {serviceInfo ? 'Select type' : 'Check your location first'}
+                      </option>
+                      {serviceInfo?.isServiceArea && <option value="offline">Offline</option>}
+                      {serviceInfo && <option value="online">Online</option>}
+                    </select>
+                    {errors.type && (
+                      <p className="mt-1.5 text-sm font-medium text-brand-600">{errors.type}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="c-notes" className="mb-2 block text-sm font-semibold text-sand-800">
+                    Additional notes
+                  </label>
+                  <textarea
+                    id="c-notes"
+                    rows={4}
+                    placeholder="Anything else we should know?"
+                    value={form.notes}
+                    onChange={set('notes')}
+                    className={`${inputBase} resize-y text-[0.9375rem]`}
+                  />
+                </div>
+
+                <Button type="submit" loading={submitting} loadingText="Submitting…">
+                  Request consultation
+                </Button>
+              </form>
+            </div>
+
+            {/* trust signal, placed at the point of conversion */}
+            <figure className="mt-5 rounded-2xl border border-sand-200 bg-sand-100/70 p-5">
+              <div className="flex gap-0.5 text-saffron-500" aria-label="5 out of 5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <svg key={i} viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="currentColor">
+                    <path d="M10 1.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L10 14.9 4.8 17.6l1-5.8L1.5 7.7l5.9-.9z" />
+                  </svg>
+                ))}
+              </div>
+              <blockquote
+                key={index}
+                className="mt-3 animate-fade-in text-[0.9375rem] leading-relaxed text-sand-700"
+              >
+                “{quote.message}”
+              </blockquote>
+              <figcaption className="mt-2 text-sm text-sand-500">
+                <span className="font-semibold text-sand-800">{quote.name}</span> · {quote.location}
+              </figcaption>
+            </figure>
+
           </div>
         </div>
       </section>
 
-      {/* ---------------- PRIVACY ---------------- */}
-      <section className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
-        <div className="flex flex-col items-start gap-4 rounded-2xl border border-sand-200 bg-white p-6 shadow-card sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[0.9375rem] text-sand-700">
-            Your data security is our priority. We value your privacy.
-          </p>
-          <Button
-            variant="secondary"
-            className="shrink-0 sm:w-auto sm:px-5 sm:py-2.5 sm:text-[0.9375rem]"
-            onClick={() => navigate('/privacy')}
-          >
-            <FaShieldAlt className="h-4 w-4" />
-            View privacy policy
-          </Button>
+      {/* ============ VISIT US ============ */}
+      <section className="border-t border-sand-200 bg-sand-100/60">
+        <div className="mx-auto max-w-7xl px-5 py-14 sm:px-8">
+          <h2 className="font-display text-4xl text-sand-900">Visit us</h2>
+
+          <div className="mt-8 grid overflow-hidden rounded-3xl border border-sand-200 bg-white shadow-card lg:grid-cols-[22rem_1fr]">
+            <div className="flex flex-col justify-center p-7">
+              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                <FaMapMarkerAlt className="h-5 w-5" />
+              </span>
+              <h3 className="mt-4 text-lg font-semibold text-sand-900">Our kitchen</h3>
+              <address className="mt-2 text-[0.9375rem] leading-relaxed text-sand-600 not-italic">
+                {ADDRESS}
+              </address>
+
+              <a
+                href={DIRECTIONS_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group mt-5 inline-flex items-center gap-2 font-semibold text-brand-600 transition-colors hover:text-brand-700"
+              >
+                Get directions
+                <svg
+                  viewBox="0 0 20 20"
+                  className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <path d="M4 10h11M10 5l5 5-5 5" />
+                </svg>
+              </a>
+            </div>
+
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3828.878551065998!2d80.40892567409921!3d16.329148632429334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a358b71d28fdfc7%3A0x7699357a26dcc9e1!2sSujatha%20Meals%20Contractors!5e0!3m2!1sen!2sin!4v1752248567560!5m2!1sen!2sin"
+              className="block h-72 w-full border-0 lg:h-full lg:min-h-[22rem]"
+              loading="lazy"
+              title="Sujatha Caterers on Google Maps"
+            />
+          </div>
         </div>
       </section>
 
-      {/* ---------------- MAP ---------------- */}
-      <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8">
-        <div className="overflow-hidden rounded-3xl border border-sand-200 shadow-card">
-          <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3828.878551065998!2d80.40892567409921!3d16.329148632429334!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a358b71d28fdfc7%3A0x7699357a26dcc9e1!2sSujatha%20Meals%20Contractors!5e0!3m2!1sen!2sin!4v1752248567560!5m2!1sen!2sin"
-            className="block h-[26rem] w-full border-0"
-            loading="lazy"
-            title="Sujatha Caterers on Google Maps"
-          />
+      {/* ============ EVENTS STRIP ============ */}
+      <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-8">
+          <p className="shrink-0 text-sm font-semibold tracking-wide text-sand-500 uppercase">
+            Events we cater
+          </p>
+          <ul className="flex flex-wrap gap-2">
+            {EVENTS_WE_CATER.map((e) => (
+              <li
+                key={e}
+                className="rounded-full border border-sand-200 bg-white px-3.5 py-1.5 text-sm font-medium text-sand-700"
+              >
+                {e}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </PageShell>

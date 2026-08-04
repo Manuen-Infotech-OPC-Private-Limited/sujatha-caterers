@@ -16,13 +16,17 @@ export const PageShell = ({ children, className = '' }) => (
 );
 
 /* Consistent page-title band across the secondary pages. */
-export const PageHero = ({ eyebrow, title, children }) => (
+export const PageHero = ({ eyebrow, title, compact = false, children }) => (
   <section className="doodle-texture relative overflow-hidden border-b border-sand-200 bg-white">
     <div
       aria-hidden="true"
       className="pointer-events-none absolute -top-32 -right-24 h-96 w-96 rounded-full bg-brand-100/40 blur-3xl"
     />
-    <div className="relative mx-auto max-w-7xl px-5 py-14 sm:px-8 lg:py-20">
+    <div
+      className={`relative mx-auto max-w-7xl px-5 sm:px-8 ${
+        compact ? 'py-10 lg:py-12' : 'py-14 lg:py-20'
+      }`}
+    >
       <div className="max-w-2xl animate-fade-up">
         {eyebrow && (
           <p className="text-sm font-semibold tracking-wide text-brand-600 uppercase">

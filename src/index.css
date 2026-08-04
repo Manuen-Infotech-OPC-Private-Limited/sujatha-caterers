@@ -180,7 +180,11 @@ body {
   color: var(--color-sand-900);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
+  /* `clip` rather than `hidden`: both stop horizontal overflow, but `hidden`
+     makes <body> a scroll container, and `position: sticky` then resolves
+     against that instead of the document — which silently breaks every
+     sticky element on the page. */
+  overflow-x: clip;
 }
 
 /* Keeps the brand's serif character on pages not yet redesigned. Converted
@@ -242,6 +246,14 @@ h1, h2, h3 {
 
   [data-ui='v2'] table {
     border-collapse: collapse;
+  }
+
+  /* Anchors inherit colour/decoration; links that want an underline opt in
+     with the `underline` / `hover:underline` utilities. Without this the UA
+     underline bleeds through on link cards. */
+  [data-ui='v2'] a {
+    color: inherit;
+    text-decoration: inherit;
   }
 
   [data-ui='v2'] button,

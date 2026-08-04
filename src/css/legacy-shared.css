@@ -13,16 +13,19 @@
    Delete each rule as its last consumer is converted to Tailwind.
 --------------------------------------------------------------------------- */
 
+/* `height: 100%` used to live on html/body purely so `.home`'s
+   `min-height: 100%` could resolve. It also made <body> the scroll container
+   instead of the document, which breaks `position: sticky` on descendants.
+   `.home` uses vh units now, so the height constraint is gone. */
 html,
 body {
-  height: 100%;
   margin: 0;
   padding: 0;
 }
 
 .home {
   position: relative;
-  min-height: 100%;
+  min-height: 100vh;
   padding-top: 5px;
 }
 
