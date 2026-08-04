@@ -1,8 +1,8 @@
-export const CATERING_PINCODE_RANGE = [522001, 522663];
+export const CATERING_PINCODE_RANGE = [500084, 522663];
 export const MEALBOX_ALLOWED_PINCODES = [
   '522001', '522002', '522003', '522004', '522005',
   '522006', '522007', '522017', '522034', '522509',
-  '500085',
+  '500085','500084'
 ];
 
 export const checkCateringServiceable = (pincode) => {

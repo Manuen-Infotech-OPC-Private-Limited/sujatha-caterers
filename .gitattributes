@@ -1,0 +1,23 @@
+# Store LF in the repo and check out LF everywhere, regardless of platform.
+# Without this, editing on Windows rewrites whole files to CRLF and every line
+# shows as changed (this repo once had 91 files diffing on nothing else).
+* text=auto eol=lf
+
+# Generated — collapsed in GitHub's diff view, but still readable via `git diff`.
+package-lock.json linguist-generated
+backend/package-lock.json linguist-generated
+
+# Binary assets: never normalized, never diffed as text.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.webp  binary
+*.ico   binary
+*.woff  binary
+*.woff2 binary
+*.ttf   binary
+*.eot   binary
+*.pdf   binary
+*.mp4   binary
+*.webm  binary
