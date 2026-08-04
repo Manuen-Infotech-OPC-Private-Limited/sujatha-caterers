@@ -10,6 +10,7 @@ import cateringImg from '../assets/logos/catering.png';
 import mealboxImg from '../assets/logos/new_mealbox.png';
 import Button from '../components/ui/Button';
 import SupportDialog from '../components/SupportDialog';
+import Footer from '../components/Footer';
 
 const STEPS = [
   {
@@ -72,7 +73,7 @@ const Home = () => {
       <Header />
 
       {/* ================= HERO ================= */}
-      <section className="relative overflow-hidden">
+      <section className="doodle-texture relative overflow-hidden">
         {/* warm glow behind the hero */}
         <div
           aria-hidden="true"
@@ -300,43 +301,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
-      <footer className="border-t border-sand-200 bg-white">
-        <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
-          <div className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-            <div className="max-w-sm">
-              <p className="font-display text-2xl text-sand-900">Sujatha Caterers</p>
-              <p className="mt-2 text-[0.9375rem] leading-relaxed text-sand-600">
-                Authentic South and North Indian catering, serving Guntur and
-                the surrounding districts.
-              </p>
-            </div>
-
-            <nav className="flex flex-wrap gap-x-8 gap-y-3 text-[0.9375rem]">
-              {[
-                { label: 'Menu', to: '/menu' },
-                { label: 'Meal boxes', to: '/mealbox' },
-                { label: 'Services', to: '/services' },
-                { label: 'About us', to: '/about' },
-                { label: 'Contact', to: '/contact' },
-                { label: 'Privacy', to: '/privacy' },
-              ].map((l) => (
-                <button
-                  key={l.to}
-                  onClick={() => navigate(l.to)}
-                  className="text-sand-600 transition-colors hover:text-brand-600"
-                >
-                  {l.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <p className="mt-10 border-t border-sand-200 pt-6 text-sm text-sand-500">
-            © {new Date().getFullYear()} Sujatha Caterers. All rights reserved.
-          </p>
-        </div>
-      </footer>
+      <Footer />
 
       {/* ================= SUPPORT FAB ================= */}
       <button

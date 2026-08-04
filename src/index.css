@@ -140,6 +140,34 @@
 }
 
 /* ---------------------------------------------------------------------------
+   Brand doodle texture.
+
+   The legacy `.home::before` stretched a 914KB PNG full-bleed, blurred it 1px,
+   scaled it 1.05 and then washed it out with a flat 20% white overlay. This
+   keeps the motif the client likes but drops the blur and the wash, sitting
+   far enough back to stay a texture rather than a background image.
+
+   To remove it site-wide, delete the `doodle-texture` class from the pages
+   that use it — nothing else depends on this rule.
+--------------------------------------------------------------------------- */
+@layer components {
+  .doodle-texture {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .doodle-texture::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url('./assets/logos/doodle.png') center / cover no-repeat;
+    opacity: 0.05;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Global base
 --------------------------------------------------------------------------- */
 body {
