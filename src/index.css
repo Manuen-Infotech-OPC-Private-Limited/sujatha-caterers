@@ -15,6 +15,10 @@
    silently do nothing. */
 @import "react-toastify/dist/ReactToastify.css" layer(components);
 
+/* Legacy rules still shared by un-converted pages. Layered so Tailwind
+   utilities win over them on converted pages. */
+@import "./css/legacy-shared.css" layer(components);
+
 @source "../index.html";
 @source "./**/*.{js,jsx}";
 
@@ -110,6 +114,32 @@
 }
 
 /* ---------------------------------------------------------------------------
+   react-toastify progress bar.
+
+   Recoloured through the library's own CSS variables rather than the
+   `progressClassName` prop — that prop REPLACES the default class list,
+   dropping `Toastify__progress-bar--animated`, and the toast auto-closes on
+   that animation's `animationend` event. Overriding the class made every
+   toast hang around forever.
+
+   Left unlayered on purpose: the library's stylesheet sits in
+   layer(components), and unlayered rules outrank every layered one.
+--------------------------------------------------------------------------- */
+:root {
+  --toastify-color-progress-success: var(--color-success-500);
+  --toastify-color-progress-error: var(--color-brand-500);
+  --toastify-color-progress-warning: var(--color-saffron-500);
+  --toastify-color-progress-info: var(--color-sand-400);
+  --toastify-color-progress-light: var(--color-sand-400);
+  --toastify-color-progress-dark: var(--color-sand-400);
+}
+
+.Toastify__progress-bar {
+  height: 3px;
+  opacity: 1;
+}
+
+/* ---------------------------------------------------------------------------
    Global base
 --------------------------------------------------------------------------- */
 body {
@@ -145,6 +175,47 @@ h1, h2, h3 {
    attributes, and switch to a plain `@import "tailwindcss"`.
 --------------------------------------------------------------------------- */
 @layer base {
+  /* Preflight's most load-bearing rule. Without it elements are content-box,
+     so `w-full` + padding + border overflows its container. */
+  [data-ui='v2'],
+  [data-ui='v2'] *,
+  [data-ui='v2'] *::before,
+  [data-ui='v2'] *::after {
+    box-sizing: border-box;
+  }
+
+  /* UA default margins. blockquote and figure carry `margin: 1em 40px`, which
+     silently indents quoted text away from its card. */
+  [data-ui='v2'] blockquote,
+  [data-ui='v2'] figure,
+  [data-ui='v2'] p,
+  [data-ui='v2'] h1,
+  [data-ui='v2'] h2,
+  [data-ui='v2'] h3,
+  [data-ui='v2'] h4,
+  [data-ui='v2'] h5,
+  [data-ui='v2'] h6,
+  [data-ui='v2'] dl,
+  [data-ui='v2'] dd,
+  [data-ui='v2'] pre,
+  [data-ui='v2'] fieldset,
+  [data-ui='v2'] hr {
+    margin: 0;
+  }
+
+  /* Lists are used as semantic grouping (step lists, card grids), so the
+     decimal/disc markers and the 40px indent are never wanted. */
+  [data-ui='v2'] ul,
+  [data-ui='v2'] ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  [data-ui='v2'] table {
+    border-collapse: collapse;
+  }
+
   [data-ui='v2'] button,
   [data-ui='v2'] input,
   [data-ui='v2'] select,

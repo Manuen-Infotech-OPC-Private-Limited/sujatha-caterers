@@ -68,13 +68,14 @@ const CloseButton = ({ closeToast }) => (
   </button>
 );
 
-const progressByType = {
-  success: 'bg-success-500',
-  error: 'bg-brand-500',
-  warning: 'bg-saffron-500',
-  info: 'bg-sand-500',
-  default: 'bg-sand-500',
-};
+/*
+ * The progress bar is recoloured in index.css via react-toastify's own CSS
+ * variables, deliberately NOT via the `progressClassName` prop: that prop
+ * replaces the default class list, which drops
+ * `Toastify__progress-bar--animated`. The toast auto-closes on that
+ * animation's `animationend` event, so overriding the class stops toasts
+ * from ever dismissing.
+ */
 
 const Toaster = () => (
   <ToastContainer
@@ -99,9 +100,6 @@ const Toaster = () => (
      */
     toastClassName={() =>
       'relative mb-3 flex w-full min-h-0 items-center gap-3 overflow-hidden rounded-2xl border border-sand-200 bg-white p-3.5 font-sans text-[0.9375rem] font-medium leading-snug text-sand-900 shadow-lift'
-    }
-    progressClassName={({ type }) =>
-      `!h-0.5 ${progressByType[type] ?? progressByType.default}`
     }
   />
 );
