@@ -64,7 +64,6 @@ const Header = () => {
 
   return (
     <header
-      data-ui="v2"
       className={`sticky top-0 z-50 font-sans transition-all duration-300 ${
         scrolled
           ? 'border-b border-sand-200 bg-sand-50/85 backdrop-blur-md'

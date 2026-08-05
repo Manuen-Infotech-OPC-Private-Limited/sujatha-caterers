@@ -73,7 +73,7 @@ const CollapsibleMenu = ({ menuData, selectedPackage, selectedMealType }) => {
     const entries = Object.entries(menuData);
 
     return (
-        <div data-ui="v2" className="font-sans">
+        <div className="font-sans">
             {/* ---------- course chips ---------- */}
             <div className="flex flex-wrap gap-2">
                 {entries.map(([category]) => {

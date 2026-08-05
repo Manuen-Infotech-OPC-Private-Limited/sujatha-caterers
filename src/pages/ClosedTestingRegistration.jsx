@@ -1,124 +1,177 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import '../css/ClosedTesting.css';
+import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import PageShell, { PageHero } from '../components/ui/PageShell';
+import Button from '../components/ui/Button';
+import Field from '../components/ui/Field';
+
+const DEVICES = ['Android', 'iOS'];
+
+const PERKS = [
+  'Early access to the app before public release',
+  'Your feedback shapes what ships',
+  'An approval email with your testing link',
+];
 
 const ClosedTestingRegistration = () => {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [phone, setPhone] = useState('');
-    const [deviceType, setDeviceType] = useState('Android');
-    const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [deviceType, setDeviceType] = useState('Android');
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate();
-    const API = process.env.REACT_APP_API_URL;
+  const navigate = useNavigate();
+  const API = process.env.REACT_APP_API_URL;
 
-    useEffect(() => {
-        AOS.init({ duration: 800, once: true });
-    }, []);
+  const validate = () => {
+    const next = {};
+    if (name.trim().length < 2) next.name = 'Please enter your full name.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()))
+      next.email = 'We send your testing link here, so it needs to be valid.';
+    if (!/^\d{10}$/.test(phone.replace(/^\+91/, '').replace(/\s/g, '')))
+      next.phone = 'Enter a 10-digit mobile number.';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
 
-        try {
-            const res = await axios.post(`${API}/api/testing/register`, {
-                name,
-                email,
-                phone,
-                deviceType
-            });
+    setLoading(true);
 
-            toast.success(res.data.message || "Registration successful!");
-            navigate('/');
-        } catch (err) {
-            console.error('Testing registration failed:', err);
-            toast.error(err.response?.data?.error || "Failed to process registration. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      const res = await axios.post(`${API}/api/testing/register`, {
+        name,
+        email,
+        phone,
+        deviceType,
+      });
 
-    return (
-        <div className="home">
-            <Header />
+      toast.success(res.data.message || 'Registration successful!');
+      navigate('/');
+    } catch (err) {
+      console.error('Testing registration failed:', err);
+      toast.error(
+        err.response?.data?.error || 'Failed to process registration. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <div className="testing-registration-container">
-                <div className="testing-card" data-aos="zoom-in">
-                    <h1>Join our Closed Testing</h1>
-                    <p className="testing-subtitle">
-                        Be among the first to experience the new Sujatha Caterers app. Help us build the perfect catering experience.
-                    </p>
+  return (
+    <PageShell>
+      <PageHero compact eyebrow="Early access" title="Join our closed testing">
+        Be among the first to use the new Sujatha Caterers app, and help us get
+        it right before it ships.
+      </PageHero>
 
-                    <form className="testing-form" onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label>Full Name</label>
-                            <input 
-                                type="text" 
-                                required 
-                                value={name} 
-                                onChange={(e) => setName(e.target.value)} 
-                                placeholder="Enter your full name"
-                            />
-                        </div>
+      <section className="mx-auto max-w-5xl px-5 py-12 sm:px-8">
+        <div className="grid gap-8 lg:grid-cols-[1fr_18rem] lg:gap-10">
+          <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-card sm:p-8">
+            <form className="space-y-5" noValidate onSubmit={handleSubmit}>
+              <Field
+                id="ct-name"
+                label="Full name"
+                placeholder="Your full name"
+                autoComplete="name"
+                value={name}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+                }}
+                error={errors.name}
+              />
 
-                        <div className="form-group">
-                            <label>Email Address</label>
-                            <input 
-                                type="email" 
-                                required 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="yourname@example.com"
-                            />
-                        </div>
+              <Field
+                id="ct-email"
+                label="Email address"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
+                }}
+                error={errors.email}
+                hint="Your approval and testing link are sent here"
+              />
 
-                        <div className="form-group">
-                            <label>Phone Number</label>
-                            <input 
-                                type="tel" 
-                                required 
-                                value={phone} 
-                                onChange={(e) => setPhone(e.target.value)} 
-                                placeholder="+91 00000 00000"
-                            />
-                        </div>
+              <Field
+                id="ct-phone"
+                label="Phone number"
+                type="tel"
+                inputMode="numeric"
+                prefix="+91"
+                placeholder="98765 43210"
+                autoComplete="tel-national"
+                value={phone}
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
+                }}
+                error={errors.phone}
+              />
 
-                        <div className="form-group">
-                            <label>Primary Device for Testing</label>
-                            <select 
-                                value={deviceType} 
-                                onChange={(e) => setDeviceType(e.target.value)}
-                                required
-                            >
-                                <option value="Android">Android Smartphone</option>
-                                <option value="iOS">iPhone (iOS)</option>
-                                <option value="Web">Web Browser</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
-
-                        <div className="testing-benefits">
-                            <h3>Why join?</h3>
-                            <ul>
-                                <li>Early access to new features</li>
-                                <li>Direct communication with our developers</li>
-                                <li>Help shape the future of our app</li>
-                            </ul>
-                        </div>
-
-                        <button className="submit-testing-btn" type="submit" disabled={loading}>
-                            {loading ? "Registering..." : "Apply for Closed Testing"}
-                        </button>
-                    </form>
+              <fieldset>
+                <legend className="mb-2 text-sm font-semibold text-sand-800">
+                  Which device will you test on?
+                </legend>
+                <div className="grid grid-cols-2 gap-3">
+                  {DEVICES.map((d) => (
+                    <label
+                      key={d}
+                      className={`flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 font-semibold transition-all duration-200 ${
+                        deviceType === d
+                          ? 'border-brand-500 bg-brand-50 text-sand-900'
+                          : 'border-sand-200 bg-white text-sand-700 hover:border-sand-300'
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="deviceType"
+                        value={d}
+                        checked={deviceType === d}
+                        onChange={() => setDeviceType(d)}
+                        className="sr-only"
+                      />
+                      {d}
+                    </label>
+                  ))}
                 </div>
+              </fieldset>
+
+              <Button type="submit" className="mt-1" loading={loading} loadingText="Submitting…">
+                Request access
+              </Button>
+            </form>
+          </div>
+
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-3xl border border-sand-200 bg-sand-100/70 p-6">
+              <h2 className="text-lg font-semibold text-sand-900">What you get</h2>
+              <ul className="mt-4 space-y-3">
+                {PERKS.map((perk) => (
+                  <li key={perk} className="flex items-start gap-2.5 text-[0.9375rem] text-sand-700">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-success-50 text-success-700">
+                      <svg viewBox="0 0 20 20" className="h-3 w-3" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 10.5l4 4 8-9" />
+                      </svg>
+                    </span>
+                    {perk}
+                  </li>
+                ))}
+              </ul>
             </div>
+          </aside>
         </div>
-    );
+      </section>
+    </PageShell>
+  );
 };
 
 export default ClosedTestingRegistration;

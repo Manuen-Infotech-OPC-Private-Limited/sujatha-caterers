@@ -5,7 +5,7 @@ import React from 'react';
  * `options` may be plain strings or { value, label, sub } objects.
  */
 const SegmentedControl = ({ label, options, value, onSelect, name }) => (
-  <div data-ui="v2" className="font-sans">
+  <div className="font-sans">
     {label && (
       <p className="mb-2 text-xs font-semibold tracking-wide text-sand-500 uppercase">
         {label}

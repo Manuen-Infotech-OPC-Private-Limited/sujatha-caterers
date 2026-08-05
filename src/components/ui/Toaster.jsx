@@ -53,7 +53,7 @@ const ToastIcon = ({ type }) => {
   );
 };
 
-// Toasts portal to <body>, outside the data-ui="v2" scope, so the reset
+// Toasts portal to <body>, outside the scope, so the reset
 // utilities (appearance-none / border-0 / bg-transparent) are spelled out here.
 const CloseButton = ({ closeToast }) => (
   <button

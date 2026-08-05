@@ -92,7 +92,6 @@ const SupportDialog = ({ open, onClose, user }) => {
 
   return (
     <div
-      data-ui="v2"
       className="fixed inset-0 z-[60] flex items-end justify-center bg-sand-950/50 p-4 backdrop-blur-sm sm:items-center"
       onClick={onClose}
       role="presentation"

@@ -7,7 +7,7 @@ import logonoBg from '../../assets/logos/logo-nobg.png';
  * left (desktop only), form on a cream panel to the right.
  */
 const AuthLayout = ({ headline, sub, backLabel, onBack, wide = false, children }) => (
-  <div data-ui="v2" className="flex min-h-screen bg-sand-50 font-sans">
+  <div className="flex min-h-screen bg-sand-50 font-sans">
     {/* ---------------- Left: imagery (desktop only) ---------------- */}
     <aside className="relative hidden w-1/2 shrink-0 overflow-hidden lg:block xl:w-[55%]">
       <img

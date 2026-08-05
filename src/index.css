@@ -1,23 +1,13 @@
-/* ---------------------------------------------------------------------------
-   Tailwind is imported WITHOUT Preflight on purpose.
-   Preflight strips heading sizes, list bullets and button styling globally,
-   which would wreck the 22 pages still running on their own CSS files. The
-   utilities work fine without it. Once every page is converted, swap the four
-   lines below for a plain `@import "tailwindcss";` and delete this comment.
---------------------------------------------------------------------------- */
+/* Every page is on Tailwind now, so Preflight is on and the scoped
+   `data-ui="v2"` reset that stood in for it is gone. */
 @layer theme, base, components, utilities;
-@import "tailwindcss/theme.css" layer(theme);
-@import "tailwindcss/utilities.css" layer(utilities);
+@import "tailwindcss";
 
 /* Pulled in here rather than as a JS import so it lands in the `components`
    layer. Unlayered CSS outranks every layered rule, so left as-is it would
    beat the Tailwind utilities in Toaster.jsx and the custom skin would
    silently do nothing. */
 @import "react-toastify/dist/ReactToastify.css" layer(components);
-
-/* Legacy rules still shared by un-converted pages. Layered so Tailwind
-   utilities win over them on converted pages. */
-@import "./css/legacy-shared.css" layer(components);
 
 @source "../index.html";
 @source "./**/*.{js,jsx}";
@@ -187,118 +177,9 @@ body {
   overflow-x: clip;
 }
 
-/* Keeps the brand's serif character on pages not yet redesigned. Converted
-   pages set the display face explicitly, so this is only a fallback. */
+/* Brand serif for headings; each page still sets its own size and weight. */
 h1, h2, h3 {
   font-family: var(--font-display);
-}
-
-/* ---------------------------------------------------------------------------
-   Opt-in form reset for redesigned pages.
-
-   Preflight is off (see top of file), so form controls still render with
-   native browser chrome — a stray 1px #ccc border inside every input. This
-   restores the parts of Preflight the new pages need, scoped to
-   `data-ui="v2"` so the 22 legacy pages keep rendering exactly as they do
-   today. It lives in @layer base, so every Tailwind utility still wins
-   regardless of specificity.
-
-   When the last page is converted: delete this block, drop the data-ui
-   attributes, and switch to a plain `@import "tailwindcss"`.
---------------------------------------------------------------------------- */
-@layer base {
-  /* Preflight's most load-bearing rule. Without it elements are content-box,
-     so `w-full` + padding + border overflows its container. */
-  [data-ui='v2'],
-  [data-ui='v2'] *,
-  [data-ui='v2'] *::before,
-  [data-ui='v2'] *::after {
-    box-sizing: border-box;
-  }
-
-  /* UA default margins. blockquote and figure carry `margin: 1em 40px`, which
-     silently indents quoted text away from its card. */
-  [data-ui='v2'] blockquote,
-  [data-ui='v2'] figure,
-  [data-ui='v2'] p,
-  [data-ui='v2'] h1,
-  [data-ui='v2'] h2,
-  [data-ui='v2'] h3,
-  [data-ui='v2'] h4,
-  [data-ui='v2'] h5,
-  [data-ui='v2'] h6,
-  [data-ui='v2'] dl,
-  [data-ui='v2'] dd,
-  [data-ui='v2'] pre,
-  [data-ui='v2'] fieldset,
-  [data-ui='v2'] hr {
-    margin: 0;
-  }
-
-  /* Lists are used as semantic grouping (step lists, card grids), so the
-     decimal/disc markers and the 40px indent are never wanted. */
-  [data-ui='v2'] ul,
-  [data-ui='v2'] ol {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  [data-ui='v2'] table {
-    border-collapse: collapse;
-  }
-
-  /* Anchors inherit colour/decoration; links that want an underline opt in
-     with the `underline` / `hover:underline` utilities. Without this the UA
-     underline bleeds through on link cards. */
-  [data-ui='v2'] a {
-    color: inherit;
-    text-decoration: inherit;
-  }
-
-  [data-ui='v2'] button,
-  [data-ui='v2'] input,
-  [data-ui='v2'] select,
-  [data-ui='v2'] textarea {
-    appearance: none;
-    -webkit-appearance: none;
-    font: inherit;
-    color: inherit;
-    background-color: transparent;
-    background-image: none;
-    border: 0;
-    border-radius: 0;
-    margin: 0;
-    padding: 0;
-  }
-
-  [data-ui='v2'] button {
-    cursor: pointer;
-  }
-
-  [data-ui='v2'] button:disabled {
-    cursor: not-allowed;
-  }
-
-  [data-ui='v2'] input::placeholder,
-  [data-ui='v2'] textarea::placeholder {
-    color: var(--color-sand-400);
-    opacity: 1;
-  }
-
-  [data-ui='v2'] img,
-  [data-ui='v2'] svg {
-    display: block;
-  }
-
-  [data-ui='v2'] img {
-    max-width: 100%;
-    height: auto;
-  }
-}
-
-html {
-  scroll-behavior: smooth;
 }
 
 @media (prefers-reduced-motion: reduce) {

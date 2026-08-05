@@ -69,7 +69,7 @@ const Home = () => {
   };
 
   return (
-    <div data-ui="v2" className="min-h-screen bg-sand-50 font-sans text-sand-900">
+    <div className="min-h-screen bg-sand-50 font-sans text-sand-900">
       <Header />
 
       {/* ================= HERO ================= */}

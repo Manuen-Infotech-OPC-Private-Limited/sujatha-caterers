@@ -30,7 +30,6 @@ const ConfirmDialog = ({
 
   return (
     <div
-      data-ui="v2"
       className="fixed inset-0 z-[70] flex items-end justify-center bg-sand-950/50 p-4 backdrop-blur-sm sm:items-center"
       onClick={onCancel}
       role="presentation"

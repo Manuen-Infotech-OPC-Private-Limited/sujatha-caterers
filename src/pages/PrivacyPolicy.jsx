@@ -1,77 +1,197 @@
-import React, { useEffect } from 'react';
-import Header from '../components/Header';
-import '../css/PrivacyPolicy.css';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import React from 'react';
 import { Link } from 'react-router-dom';
+import PageShell, { PageHero } from '../components/ui/PageShell';
+import { BUSINESS } from '../data/business';
 
-const PrivacyPolicy = () => {
-    useEffect(() => {
-        AOS.init({ duration: 800, once: true });
-    }, []);
+const SECTIONS = [
+  { id: 'collect', title: '1. Information we collect' },
+  { id: 'use', title: '2. Use of your information' },
+  { id: 'disclosure', title: '3. Disclosure of your information' },
+  { id: 'security', title: '4. Security of your information' },
+  { id: 'rights', title: '5. Your rights' },
+  { id: 'contact', title: '6. Contact us' },
+];
 
-    return (
-        <div className="home">
-            <Header />
+const H2 = ({ id, children }) => (
+  <h2 id={id} className="mt-10 scroll-mt-28 font-display text-2xl text-sand-900">
+    {children}
+  </h2>
+);
 
-            <section className="privacy-content">
-                <div className="privacy-page" data-aos="fade-up">
-                    <h1 className="privacy-title">Privacy Policy</h1>
-                    <p className="last-updated">Last Updated: March 4, 2026</p>
+const List = ({ children }) => (
+  <ul className="mt-3 space-y-2.5">{children}</ul>
+);
 
-                    <p>
-                        At Sujatha Caterers, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our catering services.
-                    </p>
+const LI = ({ children }) => (
+  <li className="flex gap-2.5">
+    <span aria-hidden="true" className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-brand-400" />
+    <span>{children}</span>
+  </li>
+);
 
-                    <h2>1. Information We Collect</h2>
-                    <p>We may collect information about you in a variety of ways. The information we may collect on the website includes:</p>
-                    <ul>
-                        <li><strong>Personal Data:</strong> Personally identifiable information, such as your name, shipping address, email address, and telephone number, that you voluntarily give to us when you register with the website or when you choose to participate in various activities related to the website, such as online chat and message boards.</li>
-                        <li><strong>Service Data:</strong> Information related to your catering needs, such as event type, approximate number of guests, and specific notes or requests.</li>
-                        <li><strong>Technical Data:</strong> We may collect location data (with your permission) to verify service availability in your area. We also collect FCM tokens for sending push notifications regarding your orders and inquiries.</li>
-                    </ul>
+const PrivacyPolicy = () => (
+  <PageShell>
+    <PageHero compact eyebrow="Legal" title="Privacy Policy">
+      How we collect, use and safeguard your information when you use our
+      website and catering services.
+    </PageHero>
 
-                    <h2>2. Use of Your Information</h2>
-                    <p>Having accurate information about you permits us to provide you with a smooth, efficient, and customized experience. Specifically, we may use information collected about you via the website to:</p>
-                    <ul>
-                        <li>Create and manage your account.</li>
-                        <li>Process your orders and consultation requests.</li>
-                        <li>Email or call you regarding your account or order.</li>
-                        <li>Verify service availability based on your location.</li>
-                        <li>Send you push notifications regarding order updates and promotions.</li>
-                        <li>Improve our website and services.</li>
-                    </ul>
+    <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8">
+      <div className="grid gap-10 lg:grid-cols-[1fr_16rem] lg:gap-16">
+        <article className="max-w-3xl text-[1.0625rem] leading-relaxed text-sand-700">
+          <p className="text-sm text-sand-500">Last updated: March 4, 2026</p>
 
-                    <h2>3. Disclosure of Your Information</h2>
-                    <p>We may share information we have collected about you in certain situations. Your information may be disclosed as follows:</p>
-                    <ul>
-                        <li><strong>By Law or to Protect Rights:</strong> If we believe the release of information about you is necessary to respond to legal process, to investigate or remedy potential violations of our policies, or to protect the rights, property, and safety of others.</li>
-                        <li><strong>Third-Party Service Providers:</strong> We may share your information with third parties that perform services for us or on our behalf, including payment processing, data analysis, email delivery, hosting services, and customer service (e.g., Firebase for authentication and notifications).</li>
-                    </ul>
+          <p className="mt-5">
+            At {BUSINESS.name}, we are committed to protecting your privacy.
+            This Privacy Policy explains how we collect, use, disclose, and
+            safeguard your information when you visit our website and use our
+            catering services.
+          </p>
 
-                    <h2>4. Security of Your Information</h2>
-                    <p>We use administrative, technical, and physical security measures to help protect your personal information. While we have taken reasonable steps to secure the personal information you provide to us, please be aware that despite our efforts, no security measures are perfect or impenetrable, and no method of data transmission can be guaranteed against any interception or other type of misuse.</p>
+          <H2 id="collect">1. Information we collect</H2>
+          <p className="mt-3">
+            We may collect information about you in a variety of ways. The
+            information we may collect on the website includes:
+          </p>
+          <List>
+            <LI>
+              <strong className="font-semibold text-sand-900">Personal data:</strong>{' '}
+              personally identifiable information such as your name, shipping
+              address, email address and telephone number, that you voluntarily
+              give us when you register or take part in activities on the site.
+            </LI>
+            <LI>
+              <strong className="font-semibold text-sand-900">Service data:</strong>{' '}
+              information related to your catering needs, such as event type,
+              approximate number of guests, and specific notes or requests.
+            </LI>
+            <LI>
+              <strong className="font-semibold text-sand-900">Technical data:</strong>{' '}
+              we may collect location data (with your permission) to verify
+              service availability in your area. We also collect FCM tokens to
+              send push notifications about your orders and enquiries.
+            </LI>
+          </List>
 
-                    <h2>5. Your Rights</h2>
-                    <p>You have the right to access, correct, or delete your personal information. Specifically:</p>
-                    <ul>
-                        <li><strong>Access & Update:</strong> You can view and update your personal details (name, email, address) through your Profile page.</li>
-                        <li><strong>Account Deletion:</strong> You have the right to request the deletion of your account and all associated data. To ensure the security of your data, deletion requests must be submitted through our official <Link to="/request-deletion">Data Deletion Request Form</Link>. Once your request is verified and processed, your profile, order history, and consultation requests will be permanently removed from our active databases.</li>
-                    </ul>
+          <H2 id="use">2. Use of your information</H2>
+          <p className="mt-3">
+            Having accurate information about you lets us provide a smooth,
+            efficient and customised experience. Specifically, we may use it to:
+          </p>
+          <List>
+            <LI>Create and manage your account.</LI>
+            <LI>Process your orders and consultation requests.</LI>
+            <LI>Email or call you regarding your account or order.</LI>
+            <LI>Verify service availability based on your location.</LI>
+            <LI>Send push notifications about order updates and promotions.</LI>
+            <LI>Improve our website and services.</LI>
+          </List>
 
-                    <h2>6. Contact Us</h2>
-                    <p>If you have questions or comments about this Privacy Policy, please contact us at:</p>
-                    <div className="contact-info">
-                        <p><strong>Sujatha Caterers</strong></p>
-                        <p>Opposite to Meenakshi Palms, Tarakarama Nagar, Srinivasa Nagar Colony</p>
-                        <p>Guntur - 522006</p>
-                        <p>Phone: +91 97035 05356</p>
-                        <p>Email: sujathameals@gmail.com</p>
-                    </div>
-                </div>
-            </section>
-        </div>
-    );
-};
+          <H2 id="disclosure">3. Disclosure of your information</H2>
+          <p className="mt-3">
+            We may share information we have collected about you in certain
+            situations:
+          </p>
+          <List>
+            <LI>
+              <strong className="font-semibold text-sand-900">By law or to protect rights:</strong>{' '}
+              where release is necessary to respond to legal process, investigate
+              or remedy potential violations of our policies, or protect the
+              rights, property and safety of others.
+            </LI>
+            <LI>
+              <strong className="font-semibold text-sand-900">Third-party service providers:</strong>{' '}
+              parties that perform services for us or on our behalf, including
+              payment processing, data analysis, email delivery, hosting and
+              customer service (for example, Firebase for authentication and
+              notifications).
+            </LI>
+          </List>
+
+          <H2 id="security">4. Security of your information</H2>
+          <p className="mt-3">
+            We use administrative, technical and physical security measures to
+            help protect your personal information. While we have taken
+            reasonable steps to secure what you provide, please be aware that no
+            security measures are perfect or impenetrable, and no method of data
+            transmission can be guaranteed against interception or misuse.
+          </p>
+
+          <H2 id="rights">5. Your rights</H2>
+          <p className="mt-3">
+            You have the right to access, correct or delete your personal
+            information:
+          </p>
+          <List>
+            <LI>
+              <strong className="font-semibold text-sand-900">Access &amp; update:</strong>{' '}
+              view and update your personal details (name, email, address) from
+              your Profile page.
+            </LI>
+            <LI>
+              <strong className="font-semibold text-sand-900">Account deletion:</strong>{' '}
+              you may request deletion of your account and all associated data.
+              For your security, requests must be submitted through our official{' '}
+              <Link
+                to="/request-deletion"
+                className="font-semibold text-brand-600 underline underline-offset-4 hover:text-brand-700"
+              >
+                data deletion request form
+              </Link>
+              . Once verified and processed, your profile, order history and
+              consultation requests are permanently removed from our active
+              databases.
+            </LI>
+          </List>
+
+          <H2 id="contact">6. Contact us</H2>
+          <p className="mt-3">
+            If you have questions or comments about this Privacy Policy, contact
+            us at:
+          </p>
+          <address className="mt-4 rounded-2xl border border-sand-200 bg-white p-5 text-[0.9375rem] leading-relaxed text-sand-700 not-italic shadow-card">
+            <strong className="block font-semibold text-sand-900">{BUSINESS.name}</strong>
+            {BUSINESS.address}
+            <br />
+            Phone:{' '}
+            <a
+              href={BUSINESS.phoneHref}
+              className="font-semibold text-brand-600 underline-offset-4 hover:underline"
+            >
+              {BUSINESS.phone}
+            </a>
+            <br />
+            Email:{' '}
+            <a
+              href={`mailto:${BUSINESS.email}`}
+              className="font-semibold text-brand-600 underline-offset-4 hover:underline"
+            >
+              {BUSINESS.email}
+            </a>
+          </address>
+        </article>
+
+        {/* on-page navigation */}
+        <nav aria-label="On this page" className="hidden lg:sticky lg:top-24 lg:block lg:self-start">
+          <p className="text-xs font-semibold tracking-wide text-sand-500 uppercase">
+            On this page
+          </p>
+          <ul className="mt-3 space-y-1">
+            {SECTIONS.map((s) => (
+              <li key={s.id}>
+                <a
+                  href={`#${s.id}`}
+                  className="block rounded-lg px-3 py-1.5 text-[0.9375rem] text-sand-600 transition-colors hover:bg-sand-100 hover:text-brand-600"
+                >
+                  {s.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </section>
+  </PageShell>
+);
 
 export default PrivacyPolicy;

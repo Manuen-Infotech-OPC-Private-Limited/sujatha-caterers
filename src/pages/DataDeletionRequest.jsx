@@ -1,114 +1,151 @@
-import React, { useState, useEffect } from 'react';
-import Header from '../components/Header';
-import '../css/DataDeletion.css';
+import React, { useState } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import PageShell, { PageHero } from '../components/ui/PageShell';
+import Button from '../components/ui/Button';
+import Field from '../components/ui/Field';
 
 const DataDeletionRequest = () => {
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    const [email, setEmail] = useState('');
-    const [reason, setReason] = useState('');
-    const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [reason, setReason] = useState('');
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
 
-    const navigate = useNavigate();
-    const API = process.env.REACT_APP_API_URL;
+  const navigate = useNavigate();
+  const API = process.env.REACT_APP_API_URL;
 
-    useEffect(() => {
-        AOS.init({ duration: 800, once: true });
-    }, []);
+  const validate = () => {
+    const next = {};
+    if (name.trim().length < 2) next.name = 'Please enter your registered name.';
+    if (!/^\d{10}$/.test(phone.replace(/^\+91/, '').replace(/\s/g, '')))
+      next.phone = 'Enter the 10-digit number on your account.';
+    if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()))
+      next.email = 'Enter a valid email, or leave it blank.';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
 
-        try {
-            const res = await axios.post(`${API}/api/users/request-deletion`, {
-                name,
-                phone,
-                email,
-                reason
-            });
+    setLoading(true);
 
-            toast.success(res.data.message || "Request submitted successfully.");
-            navigate('/');
-        } catch (err) {
-            console.error('Deletion request failed:', err);
-            toast.error(err.response?.data?.error || "Failed to submit request. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
+    try {
+      const res = await axios.post(`${API}/api/users/request-deletion`, {
+        name,
+        phone,
+        email,
+        reason,
+      });
 
-    return (
-        <div className="home">
-            <Header />
+      toast.success(res.data.message || 'Request submitted successfully.');
+      navigate('/');
+    } catch (err) {
+      console.error('Deletion request failed:', err);
+      toast.error(err.response?.data?.error || 'Failed to submit request. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-            <div className="deletion-request-container">
-                <div className="deletion-card" data-aos="fade-up">
-                    <h1>Request Data Deletion</h1>
-                    <p className="deletion-subtitle">
-                        Please fill out this form to request the permanent deletion of your account and all associated personal data from Sujatha Caterers.
-                    </p>
+  return (
+    <PageShell>
+      <PageHero compact eyebrow="Privacy" title="Request data deletion">
+        Ask us to permanently remove your account and everything associated
+        with it.
+      </PageHero>
 
-                    <form className="deletion-form" onSubmit={handleSubmit}>
-                        <div className="form-group">
-                            <label>Full Name</label>
-                            <input 
-                                type="text" 
-                                required 
-                                value={name} 
-                                onChange={(e) => setName(e.target.value)} 
-                                placeholder="Your registered name"
-                            />
-                        </div>
+      <section className="mx-auto max-w-2xl px-5 py-12 sm:px-8">
+        <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-card sm:p-8">
+          <form className="space-y-5" noValidate onSubmit={handleSubmit}>
+            <Field
+              id="del-name"
+              label="Full name"
+              placeholder="Your registered name"
+              autoComplete="name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+                if (errors.name) setErrors((p) => ({ ...p, name: undefined }));
+              }}
+              error={errors.name}
+            />
 
-                        <div className="form-group">
-                            <label>Phone Number</label>
-                            <input 
-                                type="tel" 
-                                required 
-                                value={phone} 
-                                onChange={(e) => setPhone(e.target.value)} 
-                                placeholder="Your registered phone number"
-                            />
-                        </div>
+            <Field
+              id="del-phone"
+              label="Phone number"
+              type="tel"
+              inputMode="numeric"
+              prefix="+91"
+              placeholder="98765 43210"
+              autoComplete="tel-national"
+              value={phone}
+              onChange={(e) => {
+                setPhone(e.target.value);
+                if (errors.phone) setErrors((p) => ({ ...p, phone: undefined }));
+              }}
+              error={errors.phone}
+              hint="The number your account is registered with"
+            />
 
-                        <div className="form-group">
-                            <label>Email Address (Optional)</label>
-                            <input 
-                                type="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="Your registered email"
-                            />
-                        </div>
+            <Field
+              id="del-email"
+              label="Email address"
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (errors.email) setErrors((p) => ({ ...p, email: undefined }));
+              }}
+              error={errors.email}
+              hint="Optional"
+            />
 
-                        <div className="form-group">
-                            <label>Reason for Deletion (Optional)</label>
-                            <textarea 
-                                value={reason} 
-                                onChange={(e) => setReason(e.target.value)} 
-                                placeholder="Help us improve by sharing why you're leaving"
-                                rows={4}
-                            />
-                        </div>
-
-                        <div className="deletion-notice">
-                            <p><strong>Notice:</strong> Once your request is processed, your profile, order history, and consultation requests will be permanently removed. This action cannot be reversed.</p>
-                        </div>
-
-                        <button className="submit-deletion-btn" type="submit" disabled={loading}>
-                            {loading ? "Submitting..." : "Submit Deletion Request"}
-                        </button>
-                    </form>
-                </div>
+            <div>
+              <label
+                htmlFor="del-reason"
+                className="mb-2 block text-sm font-semibold text-sand-800"
+              >
+                Reason for leaving
+              </label>
+              <textarea
+                id="del-reason"
+                rows={4}
+                value={reason}
+                onChange={(e) => setReason(e.target.value)}
+                placeholder="Help us improve by sharing why you're leaving"
+                className="w-full resize-y rounded-xl border-2 border-sand-300 bg-white px-4 py-3 text-[0.9375rem] text-sand-900 outline-none transition-all duration-200 placeholder:text-sand-400 hover:border-sand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15"
+              />
+              <p className="mt-1.5 text-sm text-sand-500">Optional</p>
             </div>
+
+            <div className="rounded-2xl border border-brand-300/60 bg-brand-50 p-4">
+              <p className="text-[0.9375rem] leading-relaxed text-brand-700">
+                <strong className="font-semibold">This cannot be undone.</strong>{' '}
+                Once processed, your profile, order history and consultation
+                requests are permanently removed.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-3 pt-1 sm:flex-row-reverse">
+              <Button type="submit" loading={loading} loadingText="Submitting…">
+                Submit deletion request
+              </Button>
+              <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
+                Cancel
+              </Button>
+            </div>
+          </form>
         </div>
-    );
+      </section>
+    </PageShell>
+  );
 };
 
 export default DataDeletionRequest;

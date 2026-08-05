@@ -119,7 +119,6 @@ const CartSummary = ({ selectedPackage, selectedMealType }) => {
 
   return (
     <div
-      data-ui="v2"
       className="rounded-3xl border border-sand-200 bg-white p-5 font-sans shadow-card sm:p-6"
     >
       <h3 className="font-display text-2xl text-sand-900">Your selection</h3>

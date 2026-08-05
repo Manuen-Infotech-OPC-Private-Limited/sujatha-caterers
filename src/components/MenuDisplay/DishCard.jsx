@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 
 /*
- * Props are unchanged — CollapsibleMenu and InclusionsList (both still on
- * legacy CSS) render this too, so `data-ui="v2"` sits on the card root rather
- * than relying on an ancestor providing it.
+ * Shared by MenuSections, CollapsibleMenu and InclusionsList, so the prop
+ * shape is deliberately stable.
  */
 const DishCard = ({ name, packages = [], selectedPackage, image, isSelected, tag }) => {
   const [loaded, setLoaded] = useState(false);
@@ -13,7 +12,6 @@ const DishCard = ({ name, packages = [], selectedPackage, image, isSelected, tag
 
   return (
     <div
-      data-ui="v2"
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-white font-sans transition-all duration-200 ${
         isSelected
           ? 'border-brand-500 ring-2 ring-brand-500/20 shadow-lift'

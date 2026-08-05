@@ -3,12 +3,12 @@ import Header from '../Header';
 import Footer from '../Footer';
 
 /*
- * Standard page frame for converted pages: opts into the data-ui="v2" reset,
+ * Standard page frame for converted pages: opts into the reset,
  * pins the footer to the bottom on short pages, and keeps the header/footer
  * pairing in one place.
  */
 export const PageShell = ({ children, className = '' }) => (
-  <div data-ui="v2" className="flex min-h-screen flex-col bg-sand-50 font-sans text-sand-900">
+  <div className="flex min-h-screen flex-col bg-sand-50 font-sans text-sand-900">
     <Header />
     <main className={`flex-1 ${className}`}>{children}</main>
     <Footer />
