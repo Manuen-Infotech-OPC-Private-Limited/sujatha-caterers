@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import '../css/ReviewOrder.css';
 import { PRICES } from '../utils/pricing';
 import { toast } from 'react-toastify';
+import { formatCategory } from '../utils/categoryLabels';
 import OrderPlacedAnimation from '../components/OrderPlacedAnimation';
 import soundSuccess from '../assets/sounds/order-placed.mp3';
 import useAuth from '../hooks/useAuth';
@@ -255,7 +256,7 @@ const ReviewOrder = () => {
                 <h4>
                   {category === 'Opted-drink' 
                     ? 'Selected Drinks' 
-                    : category.replace(/([A-Z])/g, ' $1')}
+                    : formatCategory(category)}
                 </h4>
                 <ul className="item-list">
                   {items.map((item) => (

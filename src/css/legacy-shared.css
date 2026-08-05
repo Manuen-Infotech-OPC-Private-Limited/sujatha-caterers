@@ -92,3 +92,49 @@ body {
   outline: 2px solid yellow;
   outline-offset: 2px;
 }
+
+/* ---------------------------------------------------------------------------
+   Moved from OrderPage.css when that page was converted. MealBox still uses
+   the location-gate classes, and ReviewOrder uses .order-content.
+   Delete each rule as its last consumer is converted.
+--------------------------------------------------------------------------- */
+.location-loading,
+.location-blocked {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+  padding: 2rem;
+  text-align: center;
+}
+
+.blocked-content {
+  max-width: 500px;
+  padding: 2rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.blocked-content h2 {
+  color: #d32f2f;
+  margin-bottom: 1rem;
+}
+
+.blocked-content p {
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.contact-note {
+  font-size: 0.9rem;
+  margin-top: 2rem;
+  border-top: 1px solid #eee;
+  padding-top: 1rem;
+}
+
+.order-content {
+  display: flex;
+  width: 95%;
+}

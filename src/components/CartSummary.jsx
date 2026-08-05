@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import '../css/CartSummary.css';
 import { useCart } from '../utils/cartContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { getCategoryLimit } from '../utils/cartRules';
+import { formatCategory } from '../utils/categoryLabels';
 import { useMenu } from '../utils/MenuContext';
+import Button from './ui/Button';
 
 const CartSummary = ({ selectedPackage, selectedMealType }) => {
   const { cart, removeItemFromCategory } = useCart();
@@ -38,69 +39,59 @@ const CartSummary = ({ selectedPackage, selectedMealType }) => {
   // Include if: Match Package AND (Explicitly AutoInclude OR Not Selectable)
   const complimentaryItems =
     menuData?.complimentary
-      ?.filter(item => 
-        item.packages.includes(selectedPackage) && 
+      ?.filter(item =>
+        item.packages.includes(selectedPackage) &&
         (item.autoInclude || !item.selectableGroup)
       ) || [];
 
   // Get all non-complimentary categories
   const categories = menuData
-    ? Object.keys(menuData).filter(
-      (c) => c.toLowerCase() !== 'complimentary'
-    )
+    ? Object.keys(menuData).filter((c) => c.toLowerCase() !== 'complimentary')
     : [];
 
   // Categories that must be selected
   const requiredCategories = categories.filter(
-    (category) =>
-      getCategoryLimit(selectedMealType, selectedPackage, category) > 0
+    (category) => getCategoryLimit(selectedMealType, selectedPackage, category) > 0
   );
 
   const cartKeysLower = Object.keys(cart).map(k => k.toLowerCase());
 
-  const allCategoriesSelected = requiredCategories.every((category) => {
-    const matchingKey = cartKeysLower.find(
-      k => k === category.toLowerCase()
-    );
-    return matchingKey
-      ? cart[
-        Object.keys(cart).find(
-          k => k.toLowerCase() === matchingKey
-        )
-      ]?.length > 0
-      : false;
-  });
+  const isCategoryFilled = (category) => {
+    const matchingKey = cartKeysLower.find(k => k === category.toLowerCase());
+    if (!matchingKey) return false;
+    const realKey = Object.keys(cart).find(k => k.toLowerCase() === matchingKey);
+    return (cart[realKey] || []).length > 0;
+  };
+
+  const filledCount = requiredCategories.filter(isCategoryFilled).length;
+  const allCategoriesSelected = filledCount === requiredCategories.length;
 
   const handleReviewOrder = () => {
     if (!allCategoriesSelected) {
+      const missing = requiredCategories.filter((c) => !isCategoryFilled(c));
       toast.warn(
-        'Please select at least one item from each category before proceeding.'
+        `Still to choose: ${missing.map(formatCategory).join(', ')}.`
       );
       return;
     }
 
     // 🔹 Validate Complimentary Drinks (Tea/Coffee) Selection
-    // If current package/meal allows selectable drinks (not auto-included), ensure one is selected.
-    // Logic: Look for "selectableGroup": "drink" in menuData.complimentary for current package
-    // If found, ensure cart['complimentary'] has at least one item.
     if (menuData?.complimentary) {
-        const hasSelectableDrink = menuData.complimentary.some(
-            item => 
-                item.packages.includes(selectedPackage) && 
-                item.selectableGroup === 'drink' && 
-                !item.autoInclude
-        );
+      const hasSelectableDrink = menuData.complimentary.some(
+        item =>
+          item.packages.includes(selectedPackage) &&
+          item.selectableGroup === 'drink' &&
+          !item.autoInclude
+      );
 
-        if (hasSelectableDrink) {
-            const drinkCart = cart['Opted-drink'] || [];
-            
-            if (drinkCart.length === 0) {
-                 toast.warn('Please select either Tea or Coffee from the Complimentary section.');
-                 return;
-            }
+      if (hasSelectableDrink) {
+        const drinkCart = cart['Opted-drink'] || [];
+        if (drinkCart.length === 0) {
+          toast.warn('Please select either Tea or Coffee from the Complimentary section.');
+          return;
         }
+      }
     }
-
 
     // 🔒 Defensive check: never allow webpack URLs to pass
     const hasInvalidImage = complimentaryItems.some(
@@ -122,63 +113,105 @@ const CartSummary = ({ selectedPackage, selectedMealType }) => {
     });
   };
 
-  return (
-    <div className="cart-summary">
-      <h3>Cart Summary</h3>
-      <p><strong>Meal Type:</strong> {selectedMealType}</p>
-      <p><strong>Package:</strong> {selectedPackage}</p>
+  const progress = requiredCategories.length
+    ? Math.round((filledCount / requiredCategories.length) * 100)
+    : 0;
 
-      <p className="complimentary-items-note">
-        All complimentary items will be added automatically.
+  return (
+    <div
+      data-ui="v2"
+      className="rounded-3xl border border-sand-200 bg-white p-5 font-sans shadow-card sm:p-6"
+    >
+      <h3 className="font-display text-2xl text-sand-900">Your selection</h3>
+
+      <dl className="mt-3 space-y-1 text-[0.9375rem]">
+        <div className="flex justify-between gap-3">
+          <dt className="text-sand-600">Meal</dt>
+          <dd className="font-semibold text-sand-900">{selectedMealType}</dd>
+        </div>
+        <div className="flex justify-between gap-3">
+          <dt className="text-sand-600">Package</dt>
+          <dd className="font-semibold text-sand-900">{selectedPackage}</dd>
+        </div>
+      </dl>
+
+      {/* progress */}
+      {requiredCategories.length > 0 && (
+        <div className="mt-4">
+          <div className="flex items-baseline justify-between text-sm">
+            <span className="font-medium text-sand-700">
+              {filledCount} of {requiredCategories.length} courses chosen
+            </span>
+            <span className="tabular-nums text-sand-500">{progress}%</span>
+          </div>
+          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-sand-200">
+            <div
+              className={`h-full rounded-full transition-all duration-500 ${
+                allCategoriesSelected ? 'bg-success-500' : 'bg-brand-500'
+              }`}
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      <p className="mt-4 rounded-xl bg-sand-100 px-3.5 py-2.5 text-sm text-sand-600">
+        All complimentary items are added automatically.
       </p>
 
-      <hr />
-
       {isCartEmpty ? (
-        <p className="cart-empty">No items selected.</p>
+        <p className="mt-5 border-t border-sand-200 pt-5 text-[0.9375rem] text-sand-500 italic">
+          Nothing selected yet — pick a course to get started.
+        </p>
       ) : (
         <>
-          {Object.entries(cart).map(([category, items]) => (
-            <div key={category} className="cart-category">
-              <h4>
-                {category === 'Opted-drink' 
-                  ? 'Selected Drinks' 
-                  : category.replace(/([A-Z])/g, ' $1')}
-              </h4>
-              <ul className="cart-items">
-                {items.map((item) => (
-                  <li key={item.name} className="cart-item modern-item">
-                    {item.image && (
-                      <img
-                        src={`${process.env.REACT_APP_API_URL}${item.image}`}
-                        alt={item.name}
-                        className="cart-item-img"
-                      />
-                    )}
-                    <span>{item.name}</span>
-                    <button
-                      className="remove-item-btn"
-                      aria-label={`Remove ${item.name}`}
-                      onClick={() =>
-                        handleRemoveClick(category, item.name)
-                      }
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+          <div className="mt-5 space-y-4 border-t border-sand-200 pt-5">
+            {Object.entries(cart).map(([category, items]) => (
+              <div key={category}>
+                <h4 className="text-xs font-semibold tracking-wide text-sand-500 uppercase">
+                  {category === 'Opted-drink' ? 'Selected drinks' : formatCategory(category)}
+                </h4>
 
-          <div className="get-invoice-container">
-            <button
-              className="get-invoice-btn"
-              onClick={handleReviewOrder}
-            >
-              Review Order
-            </button>
+                <ul className="mt-2 space-y-2">
+                  {items.map((item) => (
+                    <li
+                      key={item.name}
+                      className="flex items-center gap-2.5 rounded-xl border border-sand-200 bg-sand-50 p-2"
+                    >
+                      {item.image && (
+                        <img
+                          src={`${process.env.REACT_APP_API_URL}${item.image}`}
+                          alt=""
+                          aria-hidden="true"
+                          className="h-9 w-9 shrink-0 rounded-lg object-cover"
+                        />
+                      )}
+                      <span className="min-w-0 flex-1 truncate text-[0.9375rem] font-medium text-sand-900">
+                        {item.name}
+                      </span>
+                      <button
+                        type="button"
+                        aria-label={`Remove ${item.name}`}
+                        onClick={() => handleRemoveClick(category, item.name)}
+                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg text-sand-400 transition-colors hover:bg-brand-50 hover:text-brand-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+                      >
+                        <svg viewBox="0 0 20 20" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                          <path d="M5 5l10 10M15 5L5 15" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
+
+          <Button className="mt-5" onClick={handleReviewOrder}>
+            Review order
+            <svg viewBox="0 0 20 20" className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 10h11M10 5l5 5-5 5" />
+            </svg>
+          </Button>
         </>
       )}
     </div>

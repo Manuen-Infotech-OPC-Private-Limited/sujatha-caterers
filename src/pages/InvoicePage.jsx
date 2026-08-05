@@ -1,4 +1,5 @@
 import React, { useRef } from "react";
+import { formatCategory } from '../utils/categoryLabels';
 import { useLocation, useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 import logo from "../assets/logos/logo-nobg.png";
@@ -140,7 +141,7 @@ const InvoicePage = () => {
                         <React.Fragment key={category}>
                         <tr style={{ backgroundColor: "#e8f0fe" }}>
                             <td colSpan={2} style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>
-                            {category === 'Opted-drink' ? 'Selected Drinks' : category.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                            {category === 'Opted-drink' ? 'Selected Drinks' : formatCategory(category)}
                             </td>
                         </tr>
                         {chunks.map((pair, rowIdx) => (
