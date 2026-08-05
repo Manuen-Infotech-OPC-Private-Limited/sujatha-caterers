@@ -59,6 +59,16 @@
   max-height: 1000px; /* Arbitrary large height */
 }
 
+/* Each dish is wrapped in an unstyled click-handler div, so these are the
+   flex items. They previously took their size from `.dish-card { width:
+   180px }` in DishCard.css; now that DishCard is a Tailwind component with
+   no intrinsic width, the sizing has to live with the layout that needs it.
+   Remove this when OrderPage moves to a grid. */
+.dish-list-wrapper > * {
+  width: 180px;
+  margin: 10px;
+}
+
 .dish-list {
   padding: 10px 16px;
   display: flex;
