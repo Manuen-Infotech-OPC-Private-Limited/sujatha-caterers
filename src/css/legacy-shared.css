@@ -94,8 +94,8 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
-   Moved from OrderPage.css when that page was converted. MealBox still uses
-   the location-gate classes, and ReviewOrder uses .order-content.
+   Moved from OrderPage.css when that page was converted. MealBox is the only
+   remaining consumer of the location-gate classes.
    Delete each rule as its last consumer is converted.
 --------------------------------------------------------------------------- */
 .location-loading,
@@ -132,9 +132,4 @@ body {
   margin-top: 2rem;
   border-top: 1px solid #eee;
   padding-top: 1rem;
-}
-
-.order-content {
-  display: flex;
-  width: 95%;
 }
