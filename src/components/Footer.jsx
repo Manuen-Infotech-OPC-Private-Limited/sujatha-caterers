@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { BUSINESS } from '../data/business';
 
 const LINKS = [
   { label: 'Menu', to: '/menu' },
@@ -24,10 +25,10 @@ const Footer = () => {
               surrounding districts.
             </p>
             <a
-              href="tel:+919703505356"
+              href={BUSINESS.phoneHref}
               className="mt-4 inline-block font-semibold text-brand-600 transition-colors hover:text-brand-700"
             >
-              +91 97035 05356
+              {BUSINESS.phone}
             </a>
           </div>
 

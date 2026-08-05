@@ -3,6 +3,9 @@ import { formatCategory } from '../utils/categoryLabels';
 import { useLocation, useNavigate } from "react-router-dom";
 import html2pdf from "html2pdf.js";
 import logo from "../assets/logos/logo-nobg.png";
+import { BUSINESS } from "../data/business";
+import PageShell from "../components/ui/PageShell";
+import Button from "../components/ui/Button";
 
 const InvoicePage = () => {
   const { state } = useLocation();
@@ -10,7 +13,19 @@ const InvoicePage = () => {
   const invoiceRef = useRef();
 
   if (!state || !state.order || !state.user) {
-    return <p>No invoice data available</p>;
+    return (
+      <PageShell>
+        <div className="mx-auto max-w-lg px-5 py-24 text-center">
+          <h1 className="font-display text-3xl text-sand-900">Invoice not available</h1>
+          <p className="mt-2 text-[1.0625rem] text-sand-600">
+            Open an invoice from your order history so we know which one to show.
+          </p>
+          <Button className="mx-auto mt-7 sm:w-auto sm:px-7" onClick={() => navigate("/profile")}>
+            Go to order history
+          </Button>
+        </div>
+      </PageShell>
+    );
   }
 
   const { order, user } = state;
@@ -38,7 +53,8 @@ const InvoicePage = () => {
   };
 
   return (
-    <div style={{ padding: "2rem", fontFamily: "Arial, sans-serif", backgroundColor: "#f0f2f5" }}>
+    <PageShell>
+      <div className="px-5 py-10 sm:px-8" style={{ fontFamily: "Arial, sans-serif" }}>
       <div
         ref={invoiceRef}
         style={{
@@ -56,9 +72,9 @@ const InvoicePage = () => {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <img src={logo} alt="Company Logo" style={{ maxWidth: "120px" }} />
           <div style={{ textAlign: "right" }}>
-            <h3 style={{ margin: "0 0 5px 0" }}>Sujatha Caterers</h3>
-            <p style={{ margin: "0", fontSize: "0.9rem" }}>Email: info@sujathacaterers.com</p>
-            <p style={{ margin: "0", fontSize: "0.9rem" }}>Phone: +91-9123456789</p>
+            <h3 style={{ margin: "0 0 5px 0" }}>{BUSINESS.name}</h3>
+            <p style={{ margin: "0", fontSize: "0.9rem" }}>Email: {BUSINESS.email}</p>
+            <p style={{ margin: "0", fontSize: "0.9rem" }}>Phone: {BUSINESS.phone}</p>
           </div>
         </div>
 
@@ -204,19 +220,14 @@ const InvoicePage = () => {
         </div>
       </div>
 
-      {/* Buttons */}
-      <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
-        <button onClick={() => navigate(-1)} style={{ marginRight: "1rem", padding: "0.8rem 1.5rem", border:'1px solid #ccc', borderRadius:'6px', cursor:'pointer' }}>
-          Back
-        </button>
-        <button
-          onClick={handleDownload}
-          style={{ background: "#d32f2f", color: "#fff", padding: "0.8rem 1.5rem", border: "none", borderRadius: "6px", cursor:'pointer', fontWeight:'bold' }}
-        >
-          Download PDF
-        </button>
+      {/* Actions — page chrome only; the invoice above stays inline-styled
+          because html2canvas rasterises it for the PDF. */}
+      <div className="mx-auto mt-6 flex max-w-[700px] flex-col gap-3 sm:flex-row-reverse">
+        <Button onClick={handleDownload}>Download PDF</Button>
+        <Button variant="secondary" onClick={() => navigate(-1)}>Back</Button>
       </div>
-    </div>
+      </div>
+    </PageShell>
   );
 };
 
