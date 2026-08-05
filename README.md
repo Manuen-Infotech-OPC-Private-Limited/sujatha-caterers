@@ -1,28 +1,61 @@
-# Sujatha Caterers Web Application
+# Sujatha Caterers — Web App
 
-This is a modern React-based web application for Sujatha Caterers, designed to showcase catering services, menu offerings, and business information. The app provides an interactive and visually appealing experience for users to explore the menu, learn about services, and contact the business.
+Customer-facing React app for Sujatha Caterers: browse the catering menu,
+build an order across four packages, order meal boxes, and track past orders.
 
+Built with **Vite + React 19 + Tailwind 4**.
 
-## Application Features
+## Running locally
 
-- **Landing Page:** Introduction to Sujatha Caterers, with branding and a call-to-action to explore the menu.
-- **Menu Page:** Interactive menu browser with package and meal type selectors. Menu items include images and package availability.
-- **Services Page:** Overview of catering and meal box services, with descriptive sections and visuals.
-- **About Us:** Story, values, and highlights of Sujatha Caterers, including badges for unique selling points.
-- **Contact Us:** Business contact details, social media links, and embedded Google Maps location.
-- **Responsive Design:** All pages are styled for both desktop and mobile devices.
-- **Component-Based Architecture:** Reusable React components for menu display, selectors, and navigation.
-- **Data-Driven:** Menu and testimonials are managed via structured JavaScript data files.
+```bash
+npm install
+npm run dev        # http://localhost:3000
+```
 
-## Technologies Used
+The app needs the API running — see `../sujatha-backend`.
 
-- **React** (with React Router for navigation)
-- **CSS Modules** for component-level styling
-- **React Icons** for visual icons
-- **Image Assets** for menu items and branding
+## Environment
 
-## Notes
+Variables keep the `REACT_APP_` prefix from the app's Create React App days;
+`vite.config.js` maps them onto `process.env` so existing call sites keep
+working without edits.
 
-- All menu images and data are managed in the `src/assets/` and `src/data/` directories.
-- The application is ready for deployment as a static site or on any platform supporting React apps.
+```
+REACT_APP_API_URL
+REACT_APP_FIREBASE_API_KEY, _AUTH_DOMAIN, _PROJECT_ID,
+  _STORAGE_BUCKET, _MESSAGING_SENDER_ID, _APP_ID, _VAPID_KEY
+REACT_APP_MEASUREMENT_ID
+```
 
+## Layout
+
+```
+src/pages/          one file per route
+src/components/     shared components
+src/components/ui/  design-system primitives (Button, Field, PageShell, …)
+src/utils/          contexts, pricing, cart rules, serviceability
+src/data/           business details, testimonials, menu fixtures
+src/index.css       Tailwind entry + design tokens (@theme)
+```
+
+There is no `src/css/` — every page is on Tailwind and Preflight is enabled.
+Colours, fonts, shadows and motion are defined once in the `@theme` block of
+`src/index.css`; use those tokens (`bg-sand-50`, `text-brand-600`,
+`font-display`) rather than raw hex.
+
+## Related repos
+
+| | |
+| --- | --- |
+| API | `../sujatha-backend` |
+| Admin portal | `../sc-admin` |
+| Mobile app | `~/Documents/FlutterProjects/sujatha_caterers` |
+
+Business rules — package limits, per-plate pricing, serviceable pincodes —
+live in `src/utils/`. **This app is the source of truth for them.** The
+Flutter app mirrors the same numbers and has drifted before, so port changes
+web → mobile, never the reverse.
+
+## Deploying
+
+`npm run build` emits to `build/`.
