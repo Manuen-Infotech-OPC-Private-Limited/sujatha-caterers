@@ -1,25 +1,21 @@
 import React from 'react';
-import '../css/PackageSelector.css';
+import SegmentedControl from './ui/SegmentedControl';
 
 const packages = ['Basic', 'Classic', 'Premium', 'Luxury'];
 
-const PackageSelector = ({ selectedPackage, onSelect }) => {
-  return (
-    <div className="package-selector">
-      <h3>Package</h3>
-      <div className="package-buttons">
-        {packages.map((pkg) => (
-          <button
-            key={pkg}
-            className={pkg === selectedPackage ? 'active' : ''}
-            onClick={() => onSelect(pkg)}
-          >
-            {pkg}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
+/* Props are unchanged — OrderPage still renders this. */
+const PackageSelector = ({ selectedPackage, onSelect, label = 'Package', prices }) => (
+  <SegmentedControl
+    name="package"
+    label={label}
+    value={selectedPackage}
+    onSelect={onSelect}
+    options={packages.map((pkg) => ({
+      value: pkg,
+      label: pkg,
+      sub: prices?.[pkg] ? `₹${prices[pkg]}` : null,
+    }))}
+  />
+);
 
 export default PackageSelector;

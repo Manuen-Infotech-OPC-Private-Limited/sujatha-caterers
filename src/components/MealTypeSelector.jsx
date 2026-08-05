@@ -1,25 +1,17 @@
 import React from 'react';
-import '../css/MealTypeSelector.css'; // Optional styles
+import SegmentedControl from './ui/SegmentedControl';
 
 const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
 
-const MealTypeSelector = ({ selectedMealType, onSelect }) => {
-  return (
-    <div className="meal-type-selector">
-      <h3>Meal Type</h3>
-      <div className="meal-buttons">
-        {mealTypes.map((meal) => (
-          <button
-            key={meal}
-            className={meal === selectedMealType ? 'active' : ''}
-            onClick={() => onSelect(meal)}
-          >
-            {meal}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-};
+/* Props are unchanged — OrderPage still renders this. */
+const MealTypeSelector = ({ selectedMealType, onSelect, label = 'Meal type' }) => (
+  <SegmentedControl
+    name="mealType"
+    label={label}
+    value={selectedMealType}
+    onSelect={onSelect}
+    options={mealTypes}
+  />
+);
 
 export default MealTypeSelector;
