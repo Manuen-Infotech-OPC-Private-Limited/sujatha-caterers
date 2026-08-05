@@ -38,8 +38,18 @@ const InvoicePage = () => {
       margin: 0.5,
       filename: `${user.name}-invoice.pdf`,
       image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2, scrollY: 0 },
+      html2canvas: { scale: 2, scrollY: 0, useCORS: true },
       jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+      /*
+       * Without this html2pdf rasterises the whole invoice and slices the
+       * image at fixed page heights, cutting rows through the middle of the
+       * text. `avoid` moves any matched element that would straddle a
+       * boundary onto the next page instead.
+       */
+      pagebreak: {
+        mode: ["css", "legacy"],
+        avoid: [".pdf-row", ".pdf-keep-together"],
+      },
     };
     html2pdf().set(opt).from(invoiceRef.current).save();
   };
@@ -69,7 +79,7 @@ const InvoicePage = () => {
         }}
       >
         {/* Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+        <div className="pdf-keep-together" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
           <img src={logo} alt="Company Logo" style={{ maxWidth: "120px" }} />
           <div style={{ textAlign: "right" }}>
             <h3 style={{ margin: "0 0 5px 0" }}>{BUSINESS.name}</h3>
@@ -116,18 +126,18 @@ const InvoicePage = () => {
 
         {/* Payment Details Table */}
         {order.payment && (
-          <div style={{ marginBottom: "1rem" }}>
+          <div className="pdf-keep-together" style={{ marginBottom: "1rem" }}>
             <h3>Payment Details</h3>
             <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.5rem", fontSize: '0.9rem' }}>
               <tbody>
-                <tr style={{ backgroundColor: "#e8f0fe" }}>
+                <tr style={{ backgroundColor: "#e8f0fe", breakInside: "avoid", pageBreakInside: "avoid" }}>
                   <td style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>Method</td>
                   <td style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>Transaction ID</td>
                   <td style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>Date</td>
                   <td style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>Amount</td>
                   <td style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>Status</td>
                 </tr>
-                <tr>
+                <tr style={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
                   <td style={{ border: "1px solid #ddd", padding: "8px" }}>{order.payment.provider}</td>
                   <td style={{ border: "1px solid #ddd", padding: "8px" }}>{order.payment.paymentId}</td>
                   <td style={{ border: "1px solid #ddd", padding: "8px" }}>{new Date(order.payment.paidAt).toLocaleDateString()}</td>
@@ -135,7 +145,7 @@ const InvoicePage = () => {
                   <td style={{ border: "1px solid #ddd", padding: "8px" }}>{order.payment.status}</td>
                 </tr>
                 {remainingAmount > 0 && (
-                  <tr style={{background: '#fff0f0'}}>
+                  <tr style={{ background: '#fff0f0', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
                     <td colSpan={3} style={{ border: "1px solid #ddd", padding: "8px", textAlign: 'right', fontWeight: 'bold' }}>Remaining Balance:</td>
                     <td colSpan={2} style={{ border: "1px solid #ddd", padding: "8px", color: 'red', fontWeight: 'bold' }}>₹{remainingAmount}</td>
                   </tr>
@@ -149,28 +159,37 @@ const InvoicePage = () => {
         {order.orderType === 'catering' && order.cart && (
             <>
                 <h3 style={{ marginTop: "1rem" }}>Menu Items</h3>
-                <table style={{ width: "100%", borderCollapse: "collapse", marginTop: "0.5rem" }}>
-                <tbody>
+                {/*
+                  Deliberately divs rather than a table. html2pdf keeps an
+                  element off a page boundary by pushing it down with margin,
+                  and margin does nothing on a <tr> — which is why category
+                  headers were being sliced in half across pages.
+                */}
+                <div style={{ marginTop: "0.5rem" }}>
                     {Object.entries(order.cart).map(([category, items]) => {
                     const chunks = chunkArray(items, 2);
                     return (
-                        <React.Fragment key={category}>
-                        <tr style={{ backgroundColor: "#e8f0fe" }}>
-                            <td colSpan={2} style={{ border: "1px solid #ddd", padding: "8px", fontWeight: "bold" }}>
+                        <div key={category}>
+                        <div
+                            className="pdf-row"
+                            style={{ backgroundColor: "#e8f0fe", border: "1px solid #ddd", borderBottom: "none", padding: "8px", fontWeight: "bold", breakInside: "avoid", pageBreakInside: "avoid" }}
+                        >
                             {category === 'Opted-drink' ? 'Selected Drinks' : formatCategory(category)}
-                            </td>
-                        </tr>
+                        </div>
                         {chunks.map((pair, rowIdx) => (
-                            <tr key={rowIdx} style={{ backgroundColor: rowIdx % 2 === 0 ? "#fafafa" : "#fff" }}>
-                            <td style={{ border: "1px solid #ddd", padding: "8px" }}>{pair[0]?.name || ""}</td>
-                            <td style={{ border: "1px solid #ddd", padding: "8px" }}>{pair[1]?.name || ""}</td>
-                            </tr>
+                            <div
+                            key={rowIdx}
+                            className="pdf-row"
+                            style={{ display: "flex", backgroundColor: rowIdx % 2 === 0 ? "#fafafa" : "#fff", breakInside: "avoid", pageBreakInside: "avoid" }}
+                            >
+                            <div style={{ flex: 1, border: "1px solid #ddd", borderRight: "none", padding: "8px", minHeight: "1.2em" }}>{pair[0]?.name || ""}</div>
+                            <div style={{ flex: 1, border: "1px solid #ddd", padding: "8px", minHeight: "1.2em" }}>{pair[1]?.name || ""}</div>
+                            </div>
                         ))}
-                        </React.Fragment>
+                        </div>
                     );
                     })}
-                </tbody>
-                </table>
+                </div>
             </>
         )}
 
