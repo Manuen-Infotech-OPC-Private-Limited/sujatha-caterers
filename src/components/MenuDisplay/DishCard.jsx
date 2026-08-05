@@ -21,7 +21,9 @@ const DishCard = ({ name, packages = [], selectedPackage, image, isSelected, tag
       } ${isAvailable ? '' : 'opacity-55 grayscale-[35%]'}`}
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-sand-100">
-        {!loaded && !failed && (
+        {/* No src at all is the same end state as a failed load — without this
+            the skeleton below would pulse forever. */}
+        {!loaded && image && !failed && (
           <div className="absolute inset-0 animate-pulse bg-sand-200" />
         )}
 
@@ -39,7 +41,7 @@ const DishCard = ({ name, packages = [], selectedPackage, image, isSelected, tag
         )}
 
         {/* Fallback when the dish image is missing or 404s. */}
-        {failed && (
+        {(failed || !image) && (
           <div className="flex h-full w-full items-center justify-center bg-sand-100 text-sand-400">
             <svg viewBox="0 0 24 24" className="h-8 w-8" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M4 19h16M6 19V9a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v10M9 7V5m3 2V4m3 3V5" />
