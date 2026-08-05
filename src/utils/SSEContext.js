@@ -5,18 +5,19 @@ import useAuth from '../hooks/useAuth';
 const SSEContext = createContext(null);
 
 export const SSEProvider = ({ children }) => {
-  const { user, token } = useAuth();
+  const { user } = useAuth();
   const esRef = useRef(null);
   const seenIds = useRef(new Set());
 
   useEffect(() => {
-    if (!user || !token) return;
+    if (!user) return;
 
+    // The session lives in an httpOnly cookie, so there is no token to put in
+    // the URL — withCredentials sends it. This used to read a `token` that
+    // useAuth never returned, so the guard below always tripped and the stream
+    // never opened at all.
     const API = process.env.REACT_APP_API_URL;
-    const url =
-      user.role === 'admin'
-        ? `${API}/sse/admin?token=${token}`
-        : `${API}/sse/user?token=${token}`;
+    const url = user.role === 'admin' ? `${API}/sse/admin` : `${API}/sse/user`;
 
     const es = new EventSource(url, { withCredentials: true });
     esRef.current = es;
@@ -59,7 +60,7 @@ export const SSEProvider = ({ children }) => {
       esRef.current = null;
       seenIdsSet.clear(); // ✅ safe cleanup
     };
-  }, [user, token]);
+  }, [user]);
 
   return (
     <SSEContext.Provider value={null}>
