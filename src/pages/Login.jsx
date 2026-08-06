@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { isProfileComplete } from '../utils/profileStatus';
 import { useNavigate, Link } from 'react-router-dom';
 import { analytics, logEvent, auth, RecaptchaVerifier, signInWithPhoneNumber } from '../firebase';
 import axios from 'axios';
@@ -123,7 +124,12 @@ const LoginPage = () => {
 
       if (analytics) logEvent(analytics, 'login_success', { method: 'phone' });
       toast.success('Phone verified successfully!');
-      navigate('/');
+
+      // An account is created the moment the phone is verified, so being
+      // signed in is not the same as being set up. Without this a new customer
+      // landed on the home page with no name and no email, and had to find the
+      // registration link unaided.
+      navigate(isProfileComplete(me.data.user) ? '/' : '/register');
     } catch (err) {
       console.error('OTP verification failed:', err);
       setOtpError(true);

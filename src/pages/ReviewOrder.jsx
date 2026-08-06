@@ -11,6 +11,7 @@ import { checkCateringServiceable, CATERING_PINCODE_RANGE } from '../utils/servi
 import PageShell from '../components/ui/PageShell';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
+import SavedAddressPicker from '../components/SavedAddressPicker';
 
 const CGST_PERCENT = 2.5;
 const SGST_PERCENT = 2.5;
@@ -52,6 +53,20 @@ const ReviewOrder = () => {
   });
 
   const [paymentOption, setPaymentOption] = useState(100);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  // Fills the form rather than replacing it, so a one-off change for this
+  // order does not mean editing the address the customer keeps.
+  const useSavedAddress = (a) => {
+    setSelectedAddressId(a._id);
+    setDeliveryLocation((prev) => ({
+      ...prev,
+      address: a.address || '',
+      landmark: a.landmark || '',
+      city: a.city || '',
+      pincode: a.pincode || '',
+    }));
+  };
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   const API = process.env.REACT_APP_API_URL;
@@ -403,6 +418,13 @@ const ReviewOrder = () => {
 
             <Section step="3" title="Delivery address" sub="Where should we bring the food?">
               <div className="space-y-5">
+                {/* Saved addresses existed on the server and were never read
+                    here, so the full address was retyped on every order. */}
+                <SavedAddressPicker
+                  api={API}
+                  selectedId={selectedAddressId}
+                  onSelect={useSavedAddress}
+                />
                 <Field
                   id="address"
                   label="Full address"

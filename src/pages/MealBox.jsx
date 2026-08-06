@@ -9,6 +9,7 @@ import PageShell from '../components/ui/PageShell';
 import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
 import Spinner from '../components/ui/Spinner';
+import SavedAddressPicker from '../components/SavedAddressPicker';
 
 const PICKUP_LOCATIONS = [
   'Taraka Rama Nagar - 10th Line',
@@ -64,6 +65,19 @@ const MealBox = () => {
   }, [pincode, permissionDenied, requestLocation]);
 
   const [deliveryDate, setDeliveryDate] = useState('');
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+
+  const useSavedAddress = (a) => {
+    setSelectedAddressId(a._id);
+    setDeliveryLocation((prev) => ({
+      ...prev,
+      address: a.address || '',
+      landmark: a.landmark || '',
+      city: a.city || '',
+      pincode: a.pincode || '',
+    }));
+  };
+
   const [deliveryLocation, setDeliveryLocation] = useState({
     address: '',
     landmark: '',
@@ -536,6 +550,13 @@ const MealBox = () => {
                     and are not included below.
                   </p>
 
+                  {/* Same gap as the catering checkout: saved addresses
+                      existed and were never offered here. */}
+                  <SavedAddressPicker
+                    api={API}
+                    selectedId={selectedAddressId}
+                    onSelect={useSavedAddress}
+                  />
                   <Field
                     id="mb-address"
                     label="Full address"
