@@ -213,7 +213,21 @@ const ReviewOrder = () => {
         },
       };
 
-      new window.Razorpay(options).open();
+      const razorpay = new window.Razorpay(options);
+
+      // A declined card fires payment.failed, not ondismiss. Without this the
+      // checkout closed on a failure with no message and the button stuck in
+      // its loading state — the meal box page already handled it, this one
+      // didn't.
+      razorpay.on('payment.failed', (response) => {
+        setLoadingPayment(false);
+        toast.error(
+          response?.error?.description ||
+            'Payment failed. Please try another method.'
+        );
+      });
+
+      razorpay.open();
     } catch (err) {
       console.log(`error while creating payment: ${err}`);
       toast.error('Payment failed');
