@@ -27,3 +27,5 @@ yarn-error.log*
 menuData.backend.js
 # Vercel CLI link metadata (project + org ids). Local only.
 .vercel
+.env*
+!.env.example
