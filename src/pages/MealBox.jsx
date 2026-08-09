@@ -15,7 +15,25 @@ import { PICKUP_LABELS } from '../utils/pickupPoints';
 const VARIANTS = [
   { price: 199, name: 'Premium', blurb: 'Veg Biryani with a hot snack and vadiyalu' },
   { price: 179, name: 'Classic', blurb: 'Replaces Biryani with Pulihora' },
+  { price: 99, name: 'Rice Box', blurb: 'A single rice, any mix of five varieties' },
 ];
+
+/*
+ * The ₹99 rice box is ordered by variety rather than as one count: ten boxes can
+ * be ten of one rice, or any mix that sums to ten. The cap is on the total, not
+ * per variety, which is why quantity for this box is a map and not a number.
+ */
+const RICE_VARIETIES = [
+  'Avakaya Rice',
+  'Gongura Rice',
+  'Veg Biryani',
+  'Sambar Rice',
+  'Curd Rice',
+];
+
+const RICE_PRICE = 99;
+const MIN_RICE_BOXES = 1;
+const MAX_RICE_BOXES = 10;
 
 const selectClass =
   'w-full rounded-xl border-2 border-sand-300 bg-white px-4 py-3.5 text-[1.0625rem] text-sand-900 outline-none transition-all duration-200 hover:border-sand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15';
@@ -40,6 +58,8 @@ const MealBox = () => {
   const navigate = useNavigate();
 
   const [quantity, setQuantity] = useState(MIN_QTY);
+  // variety -> count, for the ₹99 rice box only.
+  const [riceQty, setRiceQty] = useState({});
   const [loading, setLoading] = useState(false);
 
   const {
@@ -110,6 +130,8 @@ const MealBox = () => {
    * option: adding one would mean a field to validate server-side and a promise
    * the kitchen has not made.
    */
+  const isRiceBox = selectedVariant === RICE_PRICE;
+
   const baseItems = [
     'Sweet',
     'Tomato Pappu', 'Fry', 'Curry', 'Rice', 'Ghee',
@@ -120,12 +142,27 @@ const MealBox = () => {
     ? ['Veg Biryani', 'Hot Snack', 'Raita (or) Kurma', 'Vadiyalu']
     : ['Pulihora', 'Raita (or) Kurma']; // 179 replaces Biryani with Pulihora
 
-  const menuItems = [...baseItems, ...variantItems];
+  // A rice box is the rice, not the full thali — it carries none of the base
+  // items, so listing them would promise food that is not in the box.
+  const menuItems = isRiceBox ? RICE_VARIETIES : [...baseItems, ...variantItems];
+
+  const riceTotal = RICE_VARIETIES.reduce((sum, v) => sum + (riceQty[v] || 0), 0);
+
+  /* One count drives pricing regardless of which box is selected; for rice it is
+     the sum across varieties. */
+  const effectiveQty = isRiceBox ? riceTotal : quantity;
+
+  const setRiceVariety = (variety, next) => {
+    const clamped = Math.max(0, next);
+    const others = riceTotal - (riceQty[variety] || 0);
+    if (others + clamped > MAX_RICE_BOXES) return; // cap is on the total
+    setRiceQty((prev) => ({ ...prev, [variety]: clamped }));
+  };
 
   const increment = () => quantity < MAX_QTY && setQuantity((q) => q + 1);
   const decrement = () => quantity > MIN_QTY && setQuantity((q) => q - 1);
 
-  const subTotal = selectedVariant * quantity;
+  const subTotal = selectedVariant * effectiveQty;
   const cgst = Math.round(subTotal * TAX_RATE);
   const sgst = Math.round(subTotal * TAX_RATE);
   const totalPrice = subTotal + cgst + sgst;
@@ -146,6 +183,11 @@ const MealBox = () => {
   // PAYMENT + ORDER
   // --------------------------------------------------
   const handleOrder = async () => {
+    if (isRiceBox && riceTotal < MIN_RICE_BOXES) {
+      toast.error('Choose at least one rice box');
+      return;
+    }
+
     if (!deliveryDate) {
       toast.error('Please select a delivery date');
       return;
@@ -259,11 +301,28 @@ const MealBox = () => {
         body: JSON.stringify({
           orderType: 'mealbox',
           mealBox: {
-            quantity,
+            quantity: effectiveQty,
             pricePerBox: selectedVariant,
-            items: menuItems,
+            // For rice, the kitchen needs the per-variety split, not a total of
+            // ten unnamed boxes. `items` stays a flat list for the existing
+            // invoice and admin views; `varieties` carries the breakdown.
+            items: isRiceBox
+              ? RICE_VARIETIES.filter((v) => riceQty[v] > 0).map(
+                  (v) => `${v} x${riceQty[v]}`
+                )
+              : menuItems,
+            ...(isRiceBox && {
+              varieties: RICE_VARIETIES.filter((v) => riceQty[v] > 0).map((v) => ({
+                name: v,
+                quantity: riceQty[v],
+              })),
+            }),
             taxes: { cgst, sgst },
-            variant: selectedVariant === 199 ? 'Premium (199)' : 'Classic (179)',
+            variant: isRiceBox
+              ? 'Rice Box (99)'
+              : selectedVariant === 199
+                ? 'Premium (199)'
+                : 'Classic (179)',
             deliveryMode,
           },
           deliveryDate, // ✅ Send delivery date
@@ -376,7 +435,7 @@ const MealBox = () => {
               <legend className="text-xs font-semibold tracking-wide text-sand-500 uppercase">
                 Choose your box
               </legend>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <div className="mt-3 grid gap-3 sm:grid-cols-3">
                 {VARIANTS.map((v) => (
                   <label
                     key={v.price}
@@ -409,13 +468,15 @@ const MealBox = () => {
 
             {/* contents */}
             <div className="mt-8">
-              <h2 className="font-display text-2xl text-sand-900">What's inside</h2>
+              <h2 className="font-display text-2xl text-sand-900">
+                {isRiceBox ? 'Available varieties' : "What's inside"}
+              </h2>
               <ul className="mt-3 flex flex-wrap gap-2">
                 {menuItems.map((item) => (
                   <li
                     key={item}
                     className={`rounded-full border px-3 py-1.5 text-sm font-medium ${
-                      variantItems.includes(item)
+                      (isRiceBox ? riceQty[item] > 0 : variantItems.includes(item))
                         ? 'border-saffron-300 bg-saffron-50 text-saffron-700'
                         : 'border-sand-200 bg-white text-sand-700'
                     }`}
@@ -425,8 +486,10 @@ const MealBox = () => {
                 ))}
               </ul>
               <p className="mt-4 text-[0.9375rem] text-sand-600">
-                <strong className="font-semibold text-sand-900">Note:</strong> fry
-                and curry items vary daily.
+                <strong className="font-semibold text-sand-900">Note:</strong>{' '}
+                {isRiceBox
+                  ? `Mix as you like — up to ${MAX_RICE_BOXES} boxes in total.`
+                  : 'fry and curry items vary daily.'}
               </p>
             </div>
           </div>
@@ -436,34 +499,93 @@ const MealBox = () => {
             <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-card">
               <h2 className="font-display text-2xl text-sand-900">Your order</h2>
 
-              {/* quantity */}
-              <div className="mt-5">
-                <p className="mb-2 text-sm font-semibold text-sand-800">Boxes</p>
-                <div className="flex items-center gap-3">
-                  <button
-                    type="button"
-                    onClick={decrement}
-                    disabled={quantity === MIN_QTY}
-                    aria-label="Decrease quantity"
-                    className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-sand-300 text-xl font-semibold text-sand-700 transition-colors hover:border-sand-400 hover:bg-sand-50 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    −
-                  </button>
-                  <span className="w-12 text-center font-display text-2xl tabular-nums text-sand-900">
-                    {quantity}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={increment}
-                    disabled={quantity === MAX_QTY}
-                    aria-label="Increase quantity"
-                    className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-sand-300 text-xl font-semibold text-sand-700 transition-colors hover:border-sand-400 hover:bg-sand-50 disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    +
-                  </button>
-                  <span className="ml-auto text-sm text-sand-500">max {MAX_QTY}</span>
+              {/* quantity — one stepper per variety for the rice box, since its
+                  cap applies to the total across varieties rather than to each */}
+              {isRiceBox ? (
+                <div className="mt-5">
+                  <div className="mb-2 flex items-baseline justify-between gap-2">
+                    <p className="text-sm font-semibold text-sand-800">Rice boxes</p>
+                    <p className="text-sm tabular-nums text-sand-500">
+                      {riceTotal} of {MAX_RICE_BOXES}
+                    </p>
+                  </div>
+
+                  <ul className="space-y-2">
+                    {RICE_VARIETIES.map((variety) => {
+                      const count = riceQty[variety] || 0;
+                      return (
+                        <li
+                          key={variety}
+                          className={`flex items-center gap-2 rounded-xl border-2 px-3 py-2 transition-colors ${
+                            count > 0
+                              ? 'border-brand-300 bg-brand-50'
+                              : 'border-sand-200 bg-white'
+                          }`}
+                        >
+                          <span className="min-w-0 flex-1 truncate text-[0.9375rem] text-sand-800">
+                            {variety}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setRiceVariety(variety, count - 1)}
+                            disabled={count === 0}
+                            aria-label={`Fewer ${variety}`}
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-sand-300 text-lg font-semibold text-sand-700 transition-colors hover:border-sand-400 hover:bg-sand-50 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            −
+                          </button>
+                          <span className="w-7 text-center font-display text-lg tabular-nums text-sand-900">
+                            {count}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setRiceVariety(variety, count + 1)}
+                            disabled={riceTotal >= MAX_RICE_BOXES}
+                            aria-label={`More ${variety}`}
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-sand-300 text-lg font-semibold text-sand-700 transition-colors hover:border-sand-400 hover:bg-sand-50 disabled:cursor-not-allowed disabled:opacity-40"
+                          >
+                            +
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+
+                  {riceTotal >= MAX_RICE_BOXES && (
+                    <p className="mt-2 text-sm text-sand-500">
+                      That's the maximum of {MAX_RICE_BOXES} boxes per order.
+                    </p>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="mt-5">
+                  <p className="mb-2 text-sm font-semibold text-sand-800">Boxes</p>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={decrement}
+                      disabled={quantity === MIN_QTY}
+                      aria-label="Decrease quantity"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-sand-300 text-xl font-semibold text-sand-700 transition-colors hover:border-sand-400 hover:bg-sand-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      −
+                    </button>
+                    <span className="w-12 text-center font-display text-2xl tabular-nums text-sand-900">
+                      {quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={increment}
+                      disabled={quantity === MAX_QTY}
+                      aria-label="Increase quantity"
+                      className="flex h-11 w-11 items-center justify-center rounded-xl border-2 border-sand-300 text-xl font-semibold text-sand-700 transition-colors hover:border-sand-400 hover:bg-sand-50 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      +
+                    </button>
+                    <span className="ml-auto text-sm text-sand-500">max {MAX_QTY}</span>
+                  </div>
+                </div>
+              )}
 
               <div className="mt-5">
                 <Field
@@ -617,7 +739,7 @@ const MealBox = () => {
               <dl className="mt-6 space-y-2 border-t border-sand-200 pt-5 text-[0.9375rem]">
                 <div className="flex justify-between gap-3">
                   <dt className="text-sand-600">
-                    ₹{selectedVariant} × {quantity}
+                    ₹{selectedVariant} × {effectiveQty}
                   </dt>
                   <dd className="font-medium tabular-nums text-sand-900">₹{subTotal}</dd>
                 </div>
@@ -642,8 +764,9 @@ const MealBox = () => {
                 onClick={handleOrder}
                 loading={loading}
                 loadingText="Processing…"
+                disabled={effectiveQty < 1}
               >
-                Pay ₹{totalPrice}
+                {effectiveQty < 1 ? 'Choose a rice box' : `Pay ₹${totalPrice}`}
               </Button>
 
               <p className="mt-3 text-center text-sm text-sand-500">
