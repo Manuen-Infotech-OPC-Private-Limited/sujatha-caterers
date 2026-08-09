@@ -26,6 +26,7 @@ import { LocationProvider } from './utils/LocationContext';
 
 import ProtectedRoute from './components/ProtectedRoute';
 import MealBox from './pages/MealBox';
+import Provisions from './pages/Provisions';
 
 
 function App() {
@@ -51,6 +52,11 @@ function App() {
                   <Route path="/privacy" element={<PrivacyPolicy />} />
                   <Route path="/request-deletion" element={<DataDeletionRequest />} />
                   <Route path="/closed-testing" element={<ClosedTestingRegistration />} />
+                  {/* Public on purpose: the catalogue and prices are browsable
+                      signed out, and the page sends you to login at checkout.
+                      Gating the whole route would hide the prices behind a
+                      sign-up, which is the opposite of a storefront. */}
+                  <Route path="/pickles-powders" element={<Provisions />} />
 
                   {/* Protected Routes */}
                   <Route

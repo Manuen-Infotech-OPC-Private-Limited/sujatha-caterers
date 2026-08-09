@@ -7,6 +7,7 @@ import { useAuthContext } from '../utils/AuthContext';
 const NAV_LINKS = [
   { label: 'Home', path: '/' },
   { label: 'Services', path: '/services' },
+  { label: 'Pickles & Powders', path: '/pickles-powders' },
   { label: 'About Us', path: '/about' },
   { label: 'Contact Us', path: '/contact' },
 ];
