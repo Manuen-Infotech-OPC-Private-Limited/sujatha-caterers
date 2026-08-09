@@ -18,6 +18,18 @@ const SGST_PERCENT = 2.5;
 const PLATFORM_CHARGE = 15;
 const MIN_GUESTS = 30;
 
+/*
+ * Supply and transport are complimentary on Premium and Luxury from this guest
+ * count up; below it the kitchen adds a delivery charge.
+ *
+ * There is no rate here on purpose. The client quotes the amount per event
+ * rather than by any formula, so this is a disclosure shown before payment, not
+ * a figure in the total. Do not "finish" this by inventing a number — the
+ * customer would be charged something nobody agreed to.
+ */
+const COMPLIMENTARY_TRANSPORT_MIN_GUESTS = 100;
+const TRANSPORT_CHARGED_PACKAGES = ['Premium', 'Luxury'];
+
 const Section = ({ step, title, sub, children }) => (
   <section className="rounded-3xl border border-sand-200 bg-white p-6 shadow-card sm:p-7">
     <div className="flex items-start gap-3">
@@ -138,6 +150,14 @@ const ReviewOrder = () => {
 
   const pricePerPerson = PRICES[selectedMealType]?.[selectedPackage] || 0;
   const total = guests && guests >= MIN_GUESTS ? guests * pricePerPerson : 0;
+
+  /* Notice only — see COMPLIMENTARY_TRANSPORT_MIN_GUESTS. Nothing downstream of
+     this reads it, and no total changes. */
+  const showDeliveryNotice =
+    TRANSPORT_CHARGED_PACKAGES.includes(selectedPackage) &&
+    guests !== '' &&
+    guests >= MIN_GUESTS &&
+    guests < COMPLIMENTARY_TRANSPORT_MIN_GUESTS;
 
   const cgstAmount = Math.round((total * CGST_PERCENT) / 100);
   const sgstAmount = Math.round((total * SGST_PERCENT) / 100);
@@ -556,6 +576,21 @@ const ReviewOrder = () => {
                   </dd>
                 </div>
               </dl>
+
+              {/* Deliberately outside the <dl> above. Supply and transport for
+                  small Premium/Luxury events is quoted by the kitchen, not
+                  computed — there is no rate to apply. Rendering it as a row
+                  among the figures would read as a charge already included in
+                  the total, which it is not. */}
+              {showDeliveryNotice && (
+                <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-sm text-amber-900">
+                  <span className="font-semibold">Delivery charges apply.</span>{' '}
+                  Supply and transport are complimentary on {selectedPackage} for{' '}
+                  {COMPLIMENTARY_TRANSPORT_MIN_GUESTS} guests and above. Below that
+                  we add a delivery charge, which we will confirm with you before
+                  the event — it is not included in the total here.
+                </p>
+              )}
 
               <Button
                 className="mt-6"

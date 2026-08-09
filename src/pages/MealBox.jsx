@@ -10,17 +10,10 @@ import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
 import Spinner from '../components/ui/Spinner';
 import SavedAddressPicker from '../components/SavedAddressPicker';
-
-const PICKUP_LOCATIONS = [
-  'Taraka Rama Nagar - 10th Line',
-  'Tanvika Function Hall - Ala Hospital Backside',
-  'Sujatha Convention - Vidya Nagar Main Road',
-  'Near SBI Bank, Pattabhipuram',
-  'Sujatha Caterers Main Kitchen, Guntur',
-];
+import { PICKUP_LABELS } from '../utils/pickupPoints';
 
 const VARIANTS = [
-  { price: 199, name: 'Premium', blurb: 'Includes Veg Biryani, Kurma and Raita' },
+  { price: 199, name: 'Premium', blurb: 'Veg Biryani with a hot snack and vadiyalu' },
   { price: 179, name: 'Classic', blurb: 'Replaces Biryani with Pulihora' },
 ];
 
@@ -100,7 +93,7 @@ const MealBox = () => {
       }));
     } else if (deliveryMode === 'pickup') {
       setDeliveryLocation({
-        address: PICKUP_LOCATIONS[0],
+        address: PICKUP_LABELS[0],
         landmark: 'Pickup Point',
         city: 'Guntur',
         pincode: '522001',
@@ -108,16 +101,24 @@ const MealBox = () => {
     }
   }, [user, deliveryMode, pincode]);
 
-  // Variant Menu Logic
+  /*
+   * Box contents per the client's April 2026 revision: the veg roll is out of
+   * both boxes, napkins are tissue, and both boxes now carry raita or kurma.
+   *
+   * "Raita (or) kurma" is one item, not a choice the customer makes — the
+   * kitchen sends whichever suits the day. It is deliberately not a selectable
+   * option: adding one would mean a field to validate server-side and a promise
+   * the kitchen has not made.
+   */
   const baseItems = [
-    'Sweet', 'Veg Roll',
+    'Sweet',
     'Tomato Pappu', 'Fry', 'Curry', 'Rice', 'Ghee',
-    'Pickle', 'Papad', 'Sambar', 'Curd', 'Salt', 'Water', 'Napkins',
+    'Pickle', 'Papad', 'Sambar', 'Curd', 'Salt', 'Water', 'Tissue',
   ];
 
   const variantItems = selectedVariant === 199
-    ? ['Veg Biryani', 'Veg Kurma', 'Raitha']
-    : ['Pulihora']; // 179 Variant replaces Biryani/Kurma/Raita with Pulihora
+    ? ['Veg Biryani', 'Hot Snack', 'Raita (or) Kurma', 'Vadiyalu']
+    : ['Pulihora', 'Raita (or) Kurma']; // 179 replaces Biryani with Pulihora
 
   const menuItems = [...baseItems, ...variantItems];
 
@@ -533,7 +534,7 @@ const MealBox = () => {
                     }
                     className={selectClass}
                   >
-                    {PICKUP_LOCATIONS.map((loc) => (
+                    {PICKUP_LABELS.map((loc) => (
                       <option key={loc} value={loc}>
                         {loc}
                       </option>

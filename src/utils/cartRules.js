@@ -1,3 +1,14 @@
+/*
+ * Per-package course limits. This file is the source of truth for these
+ * numbers; service/cartRules.js (server) and lib/utils/cart_rules.dart
+ * (Flutter) are copies and must be changed in the same commit. The server
+ * validates what the clients allow, so a client that permits one more dish
+ * than the server accepts charges the card and then drops the order into the
+ * refund queue.
+ *
+ * Lunch and Dinner share one table deliberately — the client's April 2026
+ * tightening applies to both.
+ */
 export function getCategoryLimit(mealType, selectedPackage, category) {
   // Breakfast rules
   if (mealType === "Breakfast") {
@@ -74,6 +85,9 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
       pickles: 2,
       powders: 0,
       paan: 0,
+      // Explicitly 0, not absent. Without a key this falls through to the
+      // `?? 1` default below and Classic silently allowed one bread.
+      indianbreads: 0,
       complimentary: 0,
     },
     Premium: {
@@ -81,28 +95,28 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
       powders: 0,
       pickles: 2,
       hotsnacks: 2,
-      indianbreads: 2,
-      flavoredrice: 2,
-      northindian: 2,
+      indianbreads: 1,
+      flavoredrice: 1,
+      northindian: 1,
       southindiancurries: 2,
       pappu: 2,
       southindianfries: 2,
-      icecreams: 2,
+      icecreams: 1,
       paan: 1,
       complimentary: 0,
     },
     Luxury: {
       sweets: 3,
-      pickles: 3,
-      hotsnacks: 3,
+      pickles: 2,
+      hotsnacks: 2,
       powders: 2,
-      indianbreads: 2,
+      indianbreads: 1,
       flavoredrice: 2,
       northindian: 2,
       southindiancurries: 2,
       pappu: 2,
       southindianfries: 2,
-      icecreams: 2,
+      icecreams: 1,
       paan: 1,
       complimentary: 0,
     }
