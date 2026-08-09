@@ -11,12 +11,20 @@ import Button from '../components/ui/Button';
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
 const PACKAGES = ['Basic', 'Classic', 'Premium', 'Luxury'];
 
-/* Tier summaries mirror the limits in utils/cartRules.js — keep them in sync. */
+/*
+ * Tier summaries mirror the limits in utils/cartRules.js — keep them in sync.
+ *
+ * They are a promise about what a customer can actually pick, so a stale one
+ * advertises a dish the cart then refuses. The April 2026 tightening caught
+ * these out: Premium claimed "two dishes per course" after breads, flavoured
+ * rice and north Indian dropped to one, and Luxury claimed three hot snacks
+ * after they dropped to two.
+ */
 const TIER_NOTES = {
   Basic: 'Idly, vada and upma at breakfast. One dish from each lunch course.',
   Classic: 'Adds pongal and a sweet. Two sweets and two pickles at lunch.',
-  Premium: 'Adds dosa, Indian breads, ice cream and paan. Two dishes per course.',
-  Luxury: 'Adds mysore bonda, with tea and coffee included. Three sweets, three hot snacks.',
+  Premium: 'Adds dosa, Indian breads, ice cream and paan. Two of most lunch courses.',
+  Luxury: 'Adds mysore bonda, with tea and coffee included. Three sweets and the podis.',
 };
 
 /* Pickup points mirror PICKUP_LOCATIONS in pages/MealBox.jsx. */
