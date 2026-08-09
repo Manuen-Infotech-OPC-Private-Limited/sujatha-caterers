@@ -285,12 +285,21 @@ const Profile = () => {
                 {orders.map((order) => {
                   const remainingAmount = order.total - (order.payment?.amount || 0);
                   const isMealBox = order.orderType === 'mealbox';
+                  const isProvisions = order.orderType === 'provisions';
 
+                  /* A catering cart holds objects keyed by course; the meal box
+                     and provisions carts hold plain strings. Mapping .name over
+                     the string form is why a pickles order used to list a row
+                     of blanks. */
                   const itemList = isMealBox
                     ? order.mealBox?.items || []
-                    : Object.values(order.cart || {})
-                        .flat()
-                        .map((item) => item.name);
+                    : isProvisions
+                      ? (order.provisions?.lines || []).map(
+                          (l) => `${l.name} · ${l.grams / 1000} kg`
+                        )
+                      : Object.values(order.cart || {})
+                          .flat()
+                          .map((item) => item.name);
 
                   return (
                     <article
@@ -326,6 +335,18 @@ const Profile = () => {
                               {order.mealBox?.deliveryMode === 'door' ? 'Door delivery' : 'Pickup'}
                             </Row>
                           </>
+                        ) : isProvisions ? (
+                          <>
+                            <Row label="Type">Pickles &amp; powders</Row>
+                            <Row label="Weight">
+                              {(order.provisions?.totalGrams ?? 0) / 1000} kg
+                            </Row>
+                            <Row label="Payment">
+                              {order.payment?.status === 'pending'
+                                ? 'Due on collection'
+                                : 'Paid'}
+                            </Row>
+                          </>
                         ) : (
                           <>
                             <Row label="Guests">{order.guests}</Row>
@@ -339,7 +360,9 @@ const Profile = () => {
                         </Row>
                         <Row
                           label={
-                            order.mealBox?.deliveryMode === 'pickup' ? 'Pickup point' : 'Deliver to'
+                            isProvisions || order.mealBox?.deliveryMode === 'pickup'
+                              ? 'Pickup point'
+                              : 'Deliver to'
                           }
                         >
                           {order.deliveryLocation?.address || '—'}

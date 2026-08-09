@@ -119,6 +119,19 @@ const InvoicePage = () => {
                     <p><strong>Delivery:</strong> {order.mealBox.deliveryMode === 'pickup' ? 'Pickup' : 'Door Delivery'}</p>
                 </>
             )}
+
+            {/* Without this a pickles order printed an invoice with no type and
+                no items — date, status and a total with nothing to explain it. */}
+            {order.orderType === "provisions" && (
+                <>
+                    <p><strong>Type:</strong> Pickles &amp; Powders</p>
+                    <p><strong>Weight:</strong> {(order.provisions?.totalGrams ?? 0) / 1000} kg</p>
+                    <p><strong>Collection:</strong> {order.deliveryLocation?.address || 'Pickup'}</p>
+                    {order.payment?.status === 'pending' && (
+                        <p><strong>Payment:</strong> Due on collection</p>
+                    )}
+                </>
+            )}
             
             <p><strong>Status:</strong> {order.status}</p>
           </div>
@@ -218,6 +231,35 @@ const InvoicePage = () => {
                         </span>
                     ))}
                 </div>
+            </>
+        )}
+
+        {/* Items Table - PICKLES & POWDERS */}
+        {order.orderType === 'provisions' && order.provisions?.lines?.length > 0 && (
+            <>
+                <h3 style={{ marginTop: "1rem" }}>Items</h3>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                        <tr style={{ borderBottom: '1px solid #ddd', textAlign: 'left' }}>
+                            <th style={{ padding: '8px 4px' }}>Item</th>
+                            <th style={{ padding: '8px 4px', textAlign: 'right' }}>Weight</th>
+                            <th style={{ padding: '8px 4px', textAlign: 'right' }}>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {order.provisions.lines.map((line, idx) => (
+                            <tr key={idx} style={{ borderBottom: '1px solid #f2f2f2' }}>
+                                <td style={{ padding: '8px 4px' }}>{line.name}</td>
+                                <td style={{ padding: '8px 4px', textAlign: 'right' }}>
+                                    {line.grams / 1000} kg
+                                </td>
+                                <td style={{ padding: '8px 4px', textAlign: 'right' }}>
+                                    ₹{line.amount}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </>
         )}
 
