@@ -178,6 +178,7 @@ const OrderPage = () => {
                 selectedPackage={selectedPackage}
                 onSelect={(v) => requestChange('package', v)}
                 prices={PRICES[selectedMealType]}
+                mealType={selectedMealType}
               />
             </div>
 

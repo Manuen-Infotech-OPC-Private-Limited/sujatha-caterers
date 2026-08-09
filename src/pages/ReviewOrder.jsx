@@ -153,8 +153,16 @@ const ReviewOrder = () => {
 
   /* Notice only — see COMPLIMENTARY_TRANSPORT_MIN_GUESTS. Nothing downstream of
      this reads it, and no total changes. */
+  /* Exotic is included whatever the package. Its package is a leftover the
+     customer can no longer see or change, so keying the notice on it would
+     show or hide a delivery warning at random. Disclosing it on a ₹250 plate
+     is the safe side of that — the notice costs nothing, a surprise does. */
+  const transportApplies =
+    selectedMealType === 'Exotic' ||
+    TRANSPORT_CHARGED_PACKAGES.includes(selectedPackage);
+
   const showDeliveryNotice =
-    TRANSPORT_CHARGED_PACKAGES.includes(selectedPackage) &&
+    transportApplies &&
     guests !== '' &&
     guests >= MIN_GUESTS &&
     guests < COMPLIMENTARY_TRANSPORT_MIN_GUESTS;
@@ -278,7 +286,10 @@ const ReviewOrder = () => {
       };
       const res = await fetch(`${API}/api/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Identifies the client on the order. The app already sends "mobile";
+        // web says so explicitly rather than being inferred from the header's
+        // absence, which would mislabel any future client as web.
+        headers: { 'Content-Type': 'application/json', 'x-client-type': 'web' },
         credentials: 'include',
         body: JSON.stringify({
           orderType: 'catering',
@@ -367,8 +378,12 @@ const ReviewOrder = () => {
           Review your order
         </h1>
         <p className="mt-2 text-[1.0625rem] text-sand-600">
-          {selectedPackage} · {selectedMealType} · {dishCount}{' '}
-          {dishCount === 1 ? 'dish' : 'dishes'}
+          {/* The package is meaningless on an Exotic order and the customer
+              never chose it, so naming it here would only raise a question. */}
+          {selectedMealType === 'Exotic'
+            ? 'Exotic Meal'
+            : `${selectedPackage} · ${selectedMealType}`}{' '}
+          · {dishCount} {dishCount === 1 ? 'dish' : 'dishes'}
         </p>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_23rem] lg:gap-8">
@@ -585,7 +600,8 @@ const ReviewOrder = () => {
               {showDeliveryNotice && (
                 <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-sm text-amber-900">
                   <span className="font-semibold">Delivery charges apply.</span>{' '}
-                  Supply and transport are complimentary on {selectedPackage} for{' '}
+                  Supply and transport are complimentary on{' '}
+                  {selectedMealType === 'Exotic' ? 'the Exotic Meal' : selectedPackage} for{' '}
                   {COMPLIMENTARY_TRANSPORT_MIN_GUESTS} guests and above. Below that
                   we add a delivery charge, which we will confirm with you before
                   the event — it is not included in the total here.

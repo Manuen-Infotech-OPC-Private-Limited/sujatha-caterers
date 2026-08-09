@@ -296,7 +296,10 @@ const MealBox = () => {
     try {
       const res = await fetch(`${API}/api/orders`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        // Identifies the client on the order. The app already sends "mobile";
+        // web says so explicitly rather than being inferred from the header's
+        // absence, which would mislabel any future client as web.
+        headers: { 'Content-Type': 'application/json', 'x-client-type': 'web' },
         credentials: 'include',
         body: JSON.stringify({
           orderType: 'mealbox',

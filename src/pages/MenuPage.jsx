@@ -136,6 +136,7 @@ const MenuPage = () => {
                 selectedPackage={selectedPackage}
                 onSelect={setSelectedPackage}
                 prices={PRICES[selectedMealType]}
+                mealType={selectedMealType}
               />
             </div>
 
