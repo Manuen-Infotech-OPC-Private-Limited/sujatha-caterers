@@ -1,7 +1,14 @@
 import React from 'react';
 import SegmentedControl from './ui/SegmentedControl';
 
-const mealTypes = ['Breakfast', 'Lunch', 'Dinner'];
+/* The value must match the API and the rule tables exactly — 'Exotic' — while
+   the customer reads "Exotic Meal", hence the object form for that one. */
+const mealTypes = [
+  'Breakfast',
+  'Lunch',
+  'Dinner',
+  { value: 'Exotic', label: 'Exotic Meal' },
+];
 
 /* Props are unchanged — OrderPage still renders this. */
 const MealTypeSelector = ({ selectedMealType, onSelect, label = 'Meal type' }) => (

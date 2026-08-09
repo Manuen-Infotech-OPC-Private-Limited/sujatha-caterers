@@ -10,6 +10,18 @@
  * tightening applies to both.
  */
 export function getCategoryLimit(mealType, selectedPackage, category) {
+  /*
+   * Exotic Meal: one item from any category, on every package. The package is
+   * not a gate here — it is asked for because the rest of the catering flow
+   * needs one, and the price is the same whichever is chosen.
+   *
+   * Complimentary stays 0, as it does for Lunch and Dinner: it is not a course
+   * the guest picks, it is driven by selectableGroup.
+   */
+  if (mealType === "Exotic") {
+    return category.toLowerCase() === "complimentary" ? 0 : 1;
+  }
+
   // Breakfast rules
   if (mealType === "Breakfast") {
     const lowerCat = category.toLowerCase();

@@ -172,6 +172,27 @@ const Services = () => {
             ))}
           </div>
 
+          {/* Deliberately outside the package grid. The Exotic Meal is priced
+              flat, so putting it in those cards would imply a Luxury version
+              costs more than a Basic one — it does not, because the package
+              gates nothing here. */}
+          <div className="mt-8 rounded-3xl border border-sand-200 bg-white p-6 shadow-card sm:p-7">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h3 className="font-display text-2xl text-sand-900">Exotic Meal</h3>
+              <p className="font-display text-3xl text-sand-900">
+                ₹{PRICES.Exotic.Basic}
+                <span className="ml-1 font-sans text-sm font-medium text-sand-500">
+                  / plate
+                </span>
+              </p>
+            </div>
+            <p className="mt-3 text-[0.9375rem] leading-relaxed text-sand-600">
+              A spread rather than a tier — one dish from every course, whichever
+              package you pick. Same 30 guest minimum and the same delivery terms
+              as our other catering.
+            </p>
+          </div>
+
           <p className="mt-6 text-sm text-sand-500">
             All prices exclusive of 5% GST (2.5% CGST + 2.5% SGST).
           </p>
