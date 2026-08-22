@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useCart } from '../utils/cartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+// Aliased: react-router's useLocation above is the URL, not the customer.
+import { useLocation as useUserLocation } from '../utils/LocationContext';
 import { PRICES } from '../utils/pricing';
 import { toast } from 'react-toastify';
 import { formatCategory } from '../utils/categoryLabels';
@@ -49,6 +51,7 @@ const ReviewOrder = () => {
   const { cart, resetCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const { pincode: orderedFromPincode } = useUserLocation();
   const { user } = useAuth(); // ✅ get logged-in user
 
   const [selectedPackage, setSelectedPackage] = useState(null);
@@ -293,6 +296,11 @@ const ReviewOrder = () => {
         credentials: 'include',
         body: JSON.stringify({
           orderType: 'catering',
+          // Recorded beside the delivery address rather than instead of it:
+          // catering always has a real address, but where the order was placed
+          // from is still worth knowing, and it is the same field a pickup
+          // order fills when it has no address at all.
+          ...(orderedFromPincode ? { orderedFromPincode } : {}),
           cart: fullCart,
           selectedPackage,
           selectedMealType,

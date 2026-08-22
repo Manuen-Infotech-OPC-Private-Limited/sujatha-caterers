@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+import { useLocation } from '../utils/LocationContext';
 
 import { useAuthContext } from '../utils/AuthContext';
 import { PageShell, PageHero } from '../components/ui/PageShell';
@@ -25,6 +26,10 @@ const key = (kind, id) => `${kind}:${id}`;
 const Provisions = () => {
   const { user } = useAuthContext();
   const navigate = useNavigate();
+  // Read only to stamp the order with where it was placed from. This counter
+  // is collection-only, so serviceability never gates it — but that is exactly
+  // why the pincode is worth recording.
+  const { pincode } = useLocation();
   const API = process.env.REACT_APP_API_URL;
 
   // key -> grams. Absent means not ordered; 0 is never stored.
@@ -92,6 +97,12 @@ const Provisions = () => {
       credentials: 'include',
       body: JSON.stringify({
         orderType: 'provisions',
+        // The browser's own pincode, not the delivery address. A pickup
+        // order puts the pickup point in deliveryLocation, whose pincode is
+        // ours, so without this it carries no trace of where it was placed
+        // from. Omitted when location was declined — an absent field is
+        // honest, a blank string is not.
+        ...(pincode ? { orderedFromPincode: pincode } : {}),
         provisions: {
           // Names and amounts are deliberately not sent — the server prices
           // every line from its own catalogue and ignores anything else.

@@ -303,6 +303,12 @@ const MealBox = () => {
         credentials: 'include',
         body: JSON.stringify({
           orderType: 'mealbox',
+          // The browser's own pincode, not the delivery address. A pickup
+          // order puts the pickup point in deliveryLocation, whose pincode is
+          // ours, so without this it carries no trace of where it was placed
+          // from. Omitted when location was declined — an absent field is
+          // honest, a blank string is not.
+          ...(pincode ? { orderedFromPincode: pincode } : {}),
           mealBox: {
             quantity: effectiveQty,
             pricePerBox: selectedVariant,
