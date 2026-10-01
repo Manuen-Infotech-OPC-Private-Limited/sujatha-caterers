@@ -6,6 +6,7 @@ import { getCategoryLimit } from '../utils/cartRules';
 import { formatCategory } from '../utils/categoryLabels';
 import { useMenu } from '../utils/MenuContext';
 import Button from './ui/Button';
+import { packageLabel } from '../data/packages';
 
 const CartSummary = ({ selectedPackage, selectedMealType }) => {
   const { cart, removeItemFromCategory } = useCart();
@@ -130,7 +131,9 @@ const CartSummary = ({ selectedPackage, selectedMealType }) => {
         </div>
         <div className="flex justify-between gap-3">
           <dt className="text-sand-600">Package</dt>
-          <dd className="font-semibold text-sand-900">{selectedPackage}</dd>
+          <dd className="font-semibold text-sand-900">
+            {packageLabel(selectedPackage)}
+          </dd>
         </div>
       </dl>
 

@@ -5,6 +5,8 @@ import { toast } from 'react-toastify';
 import PageShell from '../components/ui/PageShell';
 import Button from '../components/ui/Button';
 import Spinner from '../components/ui/Spinner';
+import { packageLabel } from '../data/packages';
+import { packingLabel } from '../data/mealBox';
 
 const STATUS_TONE = {
   pending: 'bg-saffron-50 text-saffron-700 border-saffron-300/60',
@@ -331,6 +333,9 @@ const Profile = () => {
                           <>
                             <Row label="Variant">{order.mealBox?.variant || 'Standard'}</Row>
                             <Row label="Quantity">{order.mealBox?.quantity} boxes</Row>
+                            <Row label="Packing">
+                              {packingLabel(order.mealBox?.packingType)}
+                            </Row>
                             <Row label="Delivery">
                               {order.mealBox?.deliveryMode === 'door' ? 'Door delivery' : 'Pickup'}
                             </Row>
@@ -351,7 +356,7 @@ const Profile = () => {
                           <>
                             <Row label="Guests">{order.guests}</Row>
                             <Row label="Package">
-                              {order.selectedPackage} ({order.selectedMealType})
+                              {packageLabel(order.selectedPackage)} ({order.selectedMealType})
                             </Row>
                           </>
                         )}

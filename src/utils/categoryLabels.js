@@ -12,6 +12,15 @@ const KNOWN_LABELS = {
   flavouredrice: 'Flavoured Rice',
   northindian: 'North Indian',
   southindian: 'South Indian',
+  /*
+   * These three arrive from the API and had no entry, so the fallback ran:
+   * being all-lowercase with nothing to split on, it title-cased the first
+   * letter only and the courses displayed as "Southindiancurries" and
+   * "Southindianfries". Keys here mirror utils/cartRules.js.
+   */
+  southindiancurries: 'South Indian Curries',
+  southindianfries: 'South Indian Fries',
+  pappu: 'Pappu',
   icecreams: 'Ice Creams',
   mysorebonda: 'Mysore Bonda',
   complimentary: 'Complimentary',

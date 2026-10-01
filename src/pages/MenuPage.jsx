@@ -9,6 +9,7 @@ import useAuth from '../hooks/useAuth';
 import { useMenu } from '../utils/MenuContext';
 import { PRICES } from '../utils/pricing';
 import { getCategoryLimit } from '../utils/cartRules';
+import { packageLabel } from '../data/packages';
 import { formatCategory } from '../utils/categoryLabels';
 
 const MenuSkeleton = () => (
@@ -172,7 +173,7 @@ const MenuPage = () => {
           <div>
             <div className="flex flex-wrap items-baseline gap-x-3">
               <h2 className="font-display text-2xl text-sand-900">
-                {selectedPackage} · {selectedMealType}
+                {packageLabel(selectedPackage)} · {selectedMealType}
               </h2>
               {pricePerPlate && (
                 <p className="font-display text-2xl text-brand-600">

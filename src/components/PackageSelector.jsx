@@ -1,7 +1,8 @@
 import React from 'react';
 import SegmentedControl from './ui/SegmentedControl';
+import { PACKAGE_KEYS, packageLabel } from '../data/packages';
 
-const packages = ['Basic', 'Classic', 'Premium', 'Luxury'];
+const packages = PACKAGE_KEYS;
 
 /*
  * The Exotic Meal is ₹250 a plate and one dish per course on every package, so
@@ -41,7 +42,8 @@ const PackageSelector = ({
       onSelect={onSelect}
       options={packages.map((pkg) => ({
         value: pkg,
-        label: pkg,
+        /* The stored key travels as `value`; only the label is renamed. */
+        label: packageLabel(pkg),
         sub: prices?.[pkg] ? `₹${prices[pkg]}` : null,
       }))}
     />

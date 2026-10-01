@@ -11,27 +11,27 @@ import Field from '../components/ui/Field';
 import Spinner from '../components/ui/Spinner';
 import SavedAddressPicker from '../components/SavedAddressPicker';
 import { PICKUP_LABELS } from '../utils/pickupPoints';
-
-const VARIANTS = [
-  { price: 199, name: 'Premium', blurb: 'Veg Biryani with a hot snack and vadiyalu' },
-  { price: 179, name: 'Classic', blurb: 'Replaces Biryani with Pulihora' },
-  { price: 99, name: 'Rice Box', blurb: 'A single rice, any mix of five varieties' },
-];
+import {
+  VARIANTS,
+  RICE_VARIETIES,
+  RICE_PRICE,
+  PACKING_TYPES,
+  DEFAULT_PACKING,
+  VARIANT_EXTRAS,
+  boxContents,
+  variantLabel,
+  packingSurcharge,
+  earliestMealBoxDate,
+  isoDate,
+  ORDER_START_HOUR,
+} from '../data/mealBox';
 
 /*
- * The ₹99 rice box is ordered by variety rather than as one count: ten boxes can
- * be ten of one rice, or any mix that sums to ten. The cap is on the total, not
- * per variety, which is why quantity for this box is a map and not a number.
+ * The ₹99 rice bowl is ordered by variety rather than as one count: ten bowls
+ * can be ten of one rice, or any mix that sums to ten. The cap is on the total,
+ * not per variety, which is why quantity for this box is a map and not a
+ * number.
  */
-const RICE_VARIETIES = [
-  'Avakaya Rice',
-  'Gongura Rice',
-  'Veg Biryani',
-  'Sambar Rice',
-  'Curd Rice',
-];
-
-const RICE_PRICE = 99;
 const MIN_RICE_BOXES = 1;
 const MAX_RICE_BOXES = 10;
 
@@ -48,6 +48,7 @@ const MealBox = () => {
   const { user } = useAuthContext(); // ✅ get logged-in user
 
   const [selectedVariant, setSelectedVariant] = useState(199);
+  const [packingType, setPackingType] = useState(DEFAULT_PACKING);
   const [deliveryMode, setDeliveryMode] = useState('pickup'); // 'pickup' | 'door'
 
   const TAX_RATE = 0.025; // 2.5% CGST + 2.5% SGST = 5% Total
@@ -98,11 +99,18 @@ const MealBox = () => {
     pincode: '',
   });
 
-  const today = new Date();
-  const minDate = today.toISOString().split('T')[0];
-  const maxDateObj = new Date();
+  /*
+   * Ordering for today closes at noon, when the kitchen starts packing. After
+   * that the calendar's floor is tomorrow — the date is removed rather than
+   * rejected on submit, because a customer who can pick today and is then told
+   * no has been misled by the control they were given.
+   */
+  const earliest = earliestMealBoxDate();
+  const minDate = isoDate(earliest);
+  const maxDateObj = new Date(earliest);
   maxDateObj.setMonth(maxDateObj.getMonth() + 3);
-  const maxDate = maxDateObj.toISOString().split('T')[0];
+  const maxDate = isoDate(maxDateObj);
+  const closedForToday = new Date().getHours() >= ORDER_START_HOUR;
 
   useEffect(() => {
     if (user && deliveryMode === 'door') {
@@ -122,29 +130,17 @@ const MealBox = () => {
   }, [user, deliveryMode, pincode]);
 
   /*
-   * Box contents per the client's April 2026 revision: the veg roll is out of
-   * both boxes, napkins are tissue, and both boxes now carry raita or kurma.
+   * "Raita (or) kurma" and "Flavour Rice" are each one item, not a choice the
+   * customer makes — the kitchen sends whichever suits the day. Neither is a
+   * selectable option: adding one would mean a field to validate server-side
+   * and a promise the kitchen has not made.
    *
-   * "Raita (or) kurma" is one item, not a choice the customer makes — the
-   * kitchen sends whichever suits the day. It is deliberately not a selectable
-   * option: adding one would mean a field to validate server-side and a promise
-   * the kitchen has not made.
+   * The lists themselves live in data/mealBox.js, which Services.jsx reads too.
    */
   const isRiceBox = selectedVariant === RICE_PRICE;
 
-  const baseItems = [
-    'Sweet',
-    'Tomato Pappu', 'Fry', 'Curry', 'Rice', 'Ghee',
-    'Pickle', 'Papad', 'Sambar', 'Curd', 'Salt', 'Water', 'Tissue',
-  ];
-
-  const variantItems = selectedVariant === 199
-    ? ['Veg Biryani', 'Hot Snack', 'Raita (or) Kurma', 'Vadiyalu']
-    : ['Pulihora', 'Raita (or) Kurma']; // 179 replaces Biryani with Pulihora
-
-  // A rice box is the rice, not the full thali — it carries none of the base
-  // items, so listing them would promise food that is not in the box.
-  const menuItems = isRiceBox ? RICE_VARIETIES : [...baseItems, ...variantItems];
+  const variantItems = VARIANT_EXTRAS[selectedVariant] || [];
+  const menuItems = boxContents(selectedVariant);
 
   const riceTotal = RICE_VARIETIES.reduce((sum, v) => sum + (riceQty[v] || 0), 0);
 
@@ -162,7 +158,11 @@ const MealBox = () => {
   const increment = () => quantity < MAX_QTY && setQuantity((q) => q + 1);
   const decrement = () => quantity > MIN_QTY && setQuantity((q) => q - 1);
 
-  const subTotal = selectedVariant * effectiveQty;
+  /* Packing is charged per box, not per order — every box needs its own
+     container. The server recomputes this the same way; the two must agree or
+     the payment is captured and then refused. */
+  const packingExtra = packingSurcharge(packingType);
+  const subTotal = (selectedVariant + packingExtra) * effectiveQty;
   const cgst = Math.round(subTotal * TAX_RATE);
   const sgst = Math.round(subTotal * TAX_RATE);
   const totalPrice = subTotal + cgst + sgst;
@@ -184,7 +184,7 @@ const MealBox = () => {
   // --------------------------------------------------
   const handleOrder = async () => {
     if (isRiceBox && riceTotal < MIN_RICE_BOXES) {
-      toast.error('Choose at least one rice box');
+      toast.error('Choose at least one rice bowl');
       return;
     }
 
@@ -193,12 +193,19 @@ const MealBox = () => {
       return;
     }
 
+    /* Checked against the noon floor rather than against midnight, so a page
+       left open across 12 o'clock cannot post a date it offered an hour ago. */
     const selectedDate = new Date(deliveryDate);
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
+    selectedDate.setHours(0, 0, 0, 0);
 
-    if (selectedDate < now) {
-      toast.error('Delivery date cannot be in the past');
+    if (selectedDate < earliestMealBoxDate()) {
+      toast.error(
+        // Read fresh, not from the render-time flag: a page left open across
+        // noon would otherwise explain the refusal with the wrong reason.
+        new Date().getHours() >= ORDER_START_HOUR
+          ? 'Orders for today closed at 12 noon — please choose tomorrow or later.'
+          : 'Delivery date cannot be in the past'
+      );
       return;
     }
 
@@ -312,6 +319,7 @@ const MealBox = () => {
           mealBox: {
             quantity: effectiveQty,
             pricePerBox: selectedVariant,
+            packingType,
             // For rice, the kitchen needs the per-variety split, not a total of
             // ten unnamed boxes. `items` stays a flat list for the existing
             // invoice and admin views; `varieties` carries the breakdown.
@@ -327,11 +335,7 @@ const MealBox = () => {
               })),
             }),
             taxes: { cgst, sgst },
-            variant: isRiceBox
-              ? 'Rice Box (99)'
-              : selectedVariant === 199
-                ? 'Premium (199)'
-                : 'Classic (179)',
+            variant: variantLabel(selectedVariant),
             deliveryMode,
           },
           deliveryDate, // ✅ Send delivery date
@@ -475,6 +479,47 @@ const MealBox = () => {
               </div>
             </fieldset>
 
+            {/* packing */}
+            <fieldset className="mt-8">
+              <legend className="text-xs font-semibold tracking-wide text-sand-500 uppercase">
+                Packing
+              </legend>
+              <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                {PACKING_TYPES.map((pk) => (
+                  <label
+                    key={pk.id}
+                    className={`flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 transition-all duration-200 ${
+                      packingType === pk.id
+                        ? 'border-brand-500 bg-brand-50'
+                        : 'border-sand-200 bg-white hover:border-sand-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="packingType"
+                      value={pk.id}
+                      checked={packingType === pk.id}
+                      onChange={() => setPackingType(pk.id)}
+                      className="mt-1 h-4 w-4 shrink-0 accent-brand-500"
+                    />
+                    <span className="min-w-0">
+                      <span className="block font-semibold text-sand-900">
+                        {pk.label}
+                        {pk.surcharge > 0 && (
+                          <span className="ml-1 font-normal text-brand-600">
+                            +₹{pk.surcharge} a box
+                          </span>
+                        )}
+                      </span>
+                      <span className="mt-0.5 block text-sm leading-snug text-sand-600">
+                        {pk.sub}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
             {/* contents */}
             <div className="mt-8">
               <h2 className="font-display text-2xl text-sand-900">
@@ -513,7 +558,7 @@ const MealBox = () => {
               {isRiceBox ? (
                 <div className="mt-5">
                   <div className="mb-2 flex items-baseline justify-between gap-2">
-                    <p className="text-sm font-semibold text-sand-800">Rice boxes</p>
+                    <p className="text-sm font-semibold text-sand-800">Rice bowls</p>
                     <p className="text-sm tabular-nums text-sand-500">
                       {riceTotal} of {MAX_RICE_BOXES}
                     </p>
@@ -562,7 +607,7 @@ const MealBox = () => {
 
                   {riceTotal >= MAX_RICE_BOXES && (
                     <p className="mt-2 text-sm text-sand-500">
-                      That's the maximum of {MAX_RICE_BOXES} boxes per order.
+                      That's the maximum of {MAX_RICE_BOXES} bowls per order.
                     </p>
                   )}
                 </div>
@@ -605,6 +650,11 @@ const MealBox = () => {
                   max={maxDate}
                   value={deliveryDate}
                   onChange={(e) => setDeliveryDate(e.target.value)}
+                  hint={
+                    closedForToday
+                      ? "Today's orders closed at 12 noon — the earliest is tomorrow."
+                      : 'Orders for today close at 12 noon.'
+                  }
                 />
               </div>
 
@@ -750,8 +800,20 @@ const MealBox = () => {
                   <dt className="text-sand-600">
                     ₹{selectedVariant} × {effectiveQty}
                   </dt>
-                  <dd className="font-medium tabular-nums text-sand-900">₹{subTotal}</dd>
+                  <dd className="font-medium tabular-nums text-sand-900">
+                    ₹{selectedVariant * effectiveQty}
+                  </dd>
                 </div>
+                {packingExtra > 0 && (
+                  <div className="flex justify-between gap-3">
+                    <dt className="text-sand-600">
+                      Bio-degradable packing · ₹{packingExtra} × {effectiveQty}
+                    </dt>
+                    <dd className="font-medium tabular-nums text-sand-900">
+                      ₹{packingExtra * effectiveQty}
+                    </dd>
+                  </div>
+                )}
                 <div className="flex justify-between gap-3">
                   <dt className="text-sand-600">CGST (2.5%)</dt>
                   <dd className="tabular-nums text-sand-700">₹{cgst}</dd>
@@ -775,7 +837,7 @@ const MealBox = () => {
                 loadingText="Processing…"
                 disabled={effectiveQty < 1}
               >
-                {effectiveQty < 1 ? 'Choose a rice box' : `Pay ₹${totalPrice}`}
+                {effectiveQty < 1 ? 'Choose a rice bowl' : `Pay ₹${totalPrice}`}
               </Button>
 
               <p className="mt-3 text-center text-sm text-sand-500">

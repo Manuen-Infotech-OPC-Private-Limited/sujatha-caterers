@@ -9,7 +9,7 @@ import Button from '../components/ui/Button';
 const STATS = [
   { value: '23+', label: 'Years of catering', note: 'Since the early 2000s' },
   { value: '100%', label: 'Vegetarian', note: 'South & North Indian' },
-  { value: '4', label: 'Curated packages', note: 'Basic to Luxury' },
+  { value: '4', label: 'Curated packages', note: 'Basic to Premium Feast' },
   { value: '3', label: 'Meal services', note: 'Breakfast, lunch, dinner' },
 ];
 
@@ -18,7 +18,7 @@ const STATS = [
 const KNOWN_FOR = [
   {
     title: 'Live dosa station',
-    body: 'Dosas made to order in front of your guests — the centrepiece of our Premium and Luxury breakfast spreads.',
+    body: 'Dosas made to order in front of your guests — the centrepiece of our Grand and Premium Feast breakfast spreads.',
   },
   {
     title: 'Banana leaf meals',

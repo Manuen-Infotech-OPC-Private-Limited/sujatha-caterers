@@ -15,7 +15,7 @@ import Footer from '../components/Footer';
 const STEPS = [
   {
     title: 'Pick your package',
-    body: 'Choose Basic, Classic, Premium or Luxury — then build the menu dish by dish.',
+    body: 'Choose Basic, Classic, Grand or Premium Feast — then build the menu dish by dish.',
   },
   {
     title: 'Tell us the details',
@@ -202,7 +202,7 @@ const Home = () => {
               img: mealboxImg,
               tag: 'Meal boxes',
               title: 'Meal boxes from ₹179',
-              body: 'Individually packed meals in Classic or Premium. Pick up from five locations, or get them delivered.',
+              body: 'Individually packed meals, or a single rice bowl. Pick up from three points across Guntur, or get them delivered.',
               cta: 'Browse meal boxes',
               to: '/mealbox',
             },

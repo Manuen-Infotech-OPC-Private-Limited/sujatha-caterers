@@ -4,6 +4,7 @@ import { useCart } from '../../utils/cartContext';
 import { getCategoryLimit } from '../../utils/cartRules';
 import { formatCategory } from '../../utils/categoryLabels';
 import { toast } from 'react-toastify';
+import { packageLabel } from '../../data/packages';
 
 const CollapsibleMenu = ({ menuData, selectedPackage, selectedMealType }) => {
     const [openCategory, setOpenCategory] = useState(
@@ -31,7 +32,9 @@ const CollapsibleMenu = ({ menuData, selectedPackage, selectedMealType }) => {
 
     const handleItemClick = (category, item) => {
         if (!item.packages.includes(selectedPackage)) {
-            toast.error(`"${item.name}" is not available in the "${selectedPackage}" package.`);
+            toast.error(
+                `"${item.name}" is not available in the ${packageLabel(selectedPackage)} package.`
+            );
             return;
         }
 

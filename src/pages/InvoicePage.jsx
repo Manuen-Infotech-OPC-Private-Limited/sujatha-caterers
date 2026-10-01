@@ -6,6 +6,8 @@ import logo from "../assets/logos/logo-nobg.png";
 import { BUSINESS } from "../data/business";
 import PageShell from "../components/ui/PageShell";
 import Button from "../components/ui/Button";
+import { packageLabel } from '../data/packages';
+import { packingLabel } from '../data/mealBox';
 
 const InvoicePage = () => {
   const { state } = useLocation();
@@ -105,7 +107,7 @@ const InvoicePage = () => {
             {order.orderType === "catering" && (
                 <>
                     <p><strong>Type:</strong> Catering</p>
-                    <p><strong>Meal:</strong> {order.selectedMealType} ({order.selectedPackage})</p>
+                    <p><strong>Meal:</strong> {order.selectedMealType} ({packageLabel(order.selectedPackage)})</p>
                     <p><strong>Guests:</strong> {order.guests}</p>
                     <p><strong>Price / Person:</strong> ₹{order.pricePerPerson}</p>
                 </>
@@ -116,6 +118,7 @@ const InvoicePage = () => {
                     <p><strong>Type:</strong> Meal Box</p>
                     <p><strong>Variant:</strong> {order.mealBox.variant || 'Standard'}</p>
                     <p><strong>Qty:</strong> {order.mealBox.quantity}</p>
+                    <p><strong>Packing:</strong> {packingLabel(order.mealBox.packingType)}</p>
                     <p><strong>Delivery:</strong> {order.mealBox.deliveryMode === 'pickup' ? 'Pickup' : 'Door Delivery'}</p>
                 </>
             )}

@@ -3,16 +3,29 @@ import { useNavigate } from 'react-router-dom';
 import mealboximg from '../assets/logos/new_mealbox.png';
 import cateringImg from '../assets/logos/catering.png';
 import { useAuthContext } from '../utils/AuthContext';
-import { PRICES } from '../utils/pricing';
+import { PRICES, MIN_GUESTS } from '../utils/pricing';
+import { PACKAGE_KEYS, packageLabel } from '../data/packages';
+import { PICKUP_LABELS } from '../utils/pickupPoints';
+import {
+  VARIANTS,
+  MEALBOX_BASE,
+  VARIANT_EXTRAS,
+  RICE_VARIETIES,
+  RICE_PRICE,
+  PACKING_TYPES,
+} from '../data/mealBox';
 import { MEALBOX_ALLOWED_PINCODES, CATERING_PINCODE_RANGE } from '../utils/serviceability';
 import PageShell, { PageHero } from '../components/ui/PageShell';
 import Button from '../components/ui/Button';
 
 const MEAL_TYPES = ['Breakfast', 'Lunch', 'Dinner'];
-const PACKAGES = ['Basic', 'Classic', 'Premium', 'Luxury'];
+const PACKAGES = PACKAGE_KEYS;
 
 /*
  * Tier summaries mirror the limits in utils/cartRules.js — keep them in sync.
+ * Keyed by the stored package key, NOT by the name on the card: key `Premium`
+ * is displayed as "Grand Feast" and key `Luxury` as "Premium Feast". See
+ * data/packages.js.
  *
  * They are a promise about what a customer can actually pick, so a stale one
  * advertises a dish the cart then refuses. The April 2026 tightening caught
@@ -27,25 +40,19 @@ const TIER_NOTES = {
   Luxury: 'Adds mysore bonda, with tea and coffee included. Three sweets and the podis.',
 };
 
-/* Pickup points mirror PICKUP_LOCATIONS in pages/MealBox.jsx. */
-const PICKUP_LOCATIONS = [
-  'Taraka Rama Nagar — 10th Line',
-  'Tanvika Function Hall — Ala Hospital backside',
-  'Sujatha Convention — Vidya Nagar Main Road',
-  'Near SBI Bank, Pattabhipuram',
-  'Sujatha Caterers Main Kitchen, Guntur',
-];
-
-const MEALBOX_BASE = [
-  'Sweet', 'Veg Roll', 'Tomato Pappu', 'Fry', 'Curry', 'Rice', 'Ghee',
-  'Pickle', 'Papad', 'Sambar', 'Curd', 'Salt', 'Water', 'Napkins',
-];
+/*
+ * Pickup points and box contents come from the shared modules now. Both used to
+ * be hardcoded here and both were stale: this page was still sending customers
+ * to Taraka Rama Nagar and Near SBI Bank, which stopped taking collections in
+ * April 2026, and still promising a veg roll and a water bottle.
+ */
+const PICKUP_LOCATIONS = PICKUP_LABELS;
 
 /* The two rows people actually compare before choosing. */
 const COMPARISON = [
   { label: 'Best for', catering: 'Weddings, poojas, corporate events', mealbox: 'Office lunches, small gatherings' },
-  { label: 'Typical size', catering: 'Dozens to hundreds of guests', mealbox: '1 – 15 boxes' },
-  { label: 'Price', catering: 'From ₹100 per plate', mealbox: '₹179 or ₹199 per box' },
+  { label: 'Typical size', catering: `${MIN_GUESTS} guests and up`, mealbox: '1 – 15 boxes' },
+  { label: 'Price', catering: 'From ₹100 per plate', mealbox: '₹99, ₹179 or ₹199 per box' },
   { label: 'How it works', catering: 'Build a menu across four packages', mealbox: 'Pick a variant, pick up or get it delivered' },
 ];
 
@@ -148,7 +155,9 @@ const Services = () => {
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <h3 className="font-display text-2xl text-sand-900">{pkg}</h3>
+                  <h3 className="font-display text-2xl text-sand-900">
+                    {packageLabel(pkg)}
+                  </h3>
                   {pkg === 'Premium' && (
                     <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-600">
                       Popular
@@ -196,7 +205,7 @@ const Services = () => {
             </div>
             <p className="mt-3 text-[0.9375rem] leading-relaxed text-sand-600">
               A spread rather than a tier — one dish from every course, whichever
-              package you pick. Same 30 guest minimum and the same delivery terms
+              package you pick. Same {MIN_GUESTS} guest minimum and the same delivery terms
               as our other catering.
             </p>
           </div>
@@ -213,27 +222,21 @@ const Services = () => {
           <h2 className="font-display text-4xl text-sand-900">What's in a meal box</h2>
           <p className="mt-3 text-[1.0625rem] text-sand-600">
             Individually packed South Indian vegetarian meals. Order between 1
-            and 15 boxes.
+            and 15 boxes, in food grade plastic or bio-degradable packing for
+            ₹{PACKING_TYPES.find((p) => p.surcharge > 0)?.surcharge} a box more.
+            Orders for the same day close at 12 noon.
           </p>
         </div>
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-2">
-          {[
-            {
-              name: 'Classic',
-              price: 179,
-              extra: ['Pulihora'],
-              blurb: 'The everyday box — a full plate without the biryani course.',
-              featured: false,
-            },
-            {
-              name: 'Premium',
-              price: 199,
-              extra: ['Veg Biryani', 'Veg Kurma', 'Raitha'],
-              blurb: 'Adds a biryani course with kurma and raitha.',
-              featured: true,
-            },
-          ].map((variant) => (
+        <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {VARIANTS.map((v) => ({
+            ...v,
+            /* The rice bowl is the rice and nothing else, so its "includes"
+               list is the varieties on offer and there is no base to add. */
+            extra: v.price === RICE_PRICE ? RICE_VARIETIES : VARIANT_EXTRAS[v.price] || [],
+            base: v.price === RICE_PRICE ? [] : MEALBOX_BASE,
+            featured: v.price === 199,
+          })).map((variant) => (
             <article
               key={variant.name}
               className={`flex flex-col rounded-3xl border bg-white p-6 shadow-card sm:p-7 ${
@@ -266,19 +269,23 @@ const Services = () => {
                 </ul>
               </div>
 
-              <p className="mt-5 text-xs font-semibold tracking-wide text-sand-500 uppercase">
-                Plus, in every box
-              </p>
-              <ul className="mt-2 flex flex-wrap gap-1.5">
-                {MEALBOX_BASE.map((item) => (
-                  <li
-                    key={item}
-                    className="rounded-full border border-sand-200 bg-sand-50 px-2.5 py-1 text-sm text-sand-700"
-                  >
-                    {item}
-                  </li>
-                ))}
-              </ul>
+              {variant.base.length > 0 && (
+                <>
+                  <p className="mt-5 text-xs font-semibold tracking-wide text-sand-500 uppercase">
+                    Plus, in every box
+                  </p>
+                  <ul className="mt-2 flex flex-wrap gap-1.5">
+                    {variant.base.map((item) => (
+                      <li
+                        key={item}
+                        className="rounded-full border border-sand-200 bg-sand-50 px-2.5 py-1 text-sm text-sand-700"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
             </article>
           ))}
         </div>
@@ -288,7 +295,7 @@ const Services = () => {
           <div className="rounded-3xl border border-sand-200 bg-white p-6 shadow-card sm:p-7">
             <h3 className="text-lg font-semibold text-sand-900">Pick up — free</h3>
             <p className="mt-1 text-[0.9375rem] text-sand-600">
-              Collect from any of our five points across Guntur.
+              Collect from any of our {PICKUP_LOCATIONS.length} points across Guntur.
             </p>
             <ul className="mt-4 space-y-2.5">
               {PICKUP_LOCATIONS.map((loc) => (

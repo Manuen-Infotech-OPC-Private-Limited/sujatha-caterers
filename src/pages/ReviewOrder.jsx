@@ -3,7 +3,8 @@ import { useCart } from '../utils/cartContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 // Aliased: react-router's useLocation above is the URL, not the customer.
 import { useLocation as useUserLocation } from '../utils/LocationContext';
-import { PRICES } from '../utils/pricing';
+import { PRICES, MIN_GUESTS } from '../utils/pricing';
+import { packageLabel } from '../data/packages';
 import { toast } from 'react-toastify';
 import { formatCategory } from '../utils/categoryLabels';
 import OrderPlacedAnimation from '../components/OrderPlacedAnimation';
@@ -18,7 +19,6 @@ import SavedAddressPicker from '../components/SavedAddressPicker';
 const CGST_PERCENT = 2.5;
 const SGST_PERCENT = 2.5;
 const PLATFORM_CHARGE = 15;
-const MIN_GUESTS = 30;
 
 /*
  * Supply and transport are complimentary on Premium and Luxury from this guest
@@ -390,7 +390,7 @@ const ReviewOrder = () => {
               never chose it, so naming it here would only raise a question. */}
           {selectedMealType === 'Exotic'
             ? 'Exotic Meal'
-            : `${selectedPackage} · ${selectedMealType}`}{' '}
+            : `${packageLabel(selectedPackage)} · ${selectedMealType}`}{' '}
           · {dishCount} {dishCount === 1 ? 'dish' : 'dishes'}
         </p>
 
@@ -609,7 +609,10 @@ const ReviewOrder = () => {
                 <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-sm text-amber-900">
                   <span className="font-semibold">Delivery charges apply.</span>{' '}
                   Supply and transport are complimentary on{' '}
-                  {selectedMealType === 'Exotic' ? 'the Exotic Meal' : selectedPackage} for{' '}
+                  {selectedMealType === 'Exotic'
+                    ? 'the Exotic Meal'
+                    : packageLabel(selectedPackage)}{' '}
+                  for{' '}
                   {COMPLIMENTARY_TRANSPORT_MIN_GUESTS} guests and above. Below that
                   we add a delivery charge, which we will confirm with you before
                   the event — it is not included in the total here.
