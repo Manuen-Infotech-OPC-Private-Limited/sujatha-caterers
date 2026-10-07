@@ -78,6 +78,7 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
   // Lunch & Dinner rules
   const rules = {
     Basic: {
+      chaaru: 0,
       sweets: 1,
       hotsnacks: 1,
       indianbreads: 0,
@@ -93,6 +94,7 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
       complimentary: 0,
     },
     Classic: {
+      chaaru: 0,
       sweets: 2,
       pickles: 2,
       powders: 0,
@@ -104,6 +106,7 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
     },
     /* "Grand Feast" to a customer — see data/packages.js. */
     Premium: {
+      chaaru: 0,
       sweets: 2,
       powders: 0,
       pickles: 2,
@@ -122,6 +125,10 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
     },
     /* "Premium Feast" to a customer — see data/packages.js. */
     Luxury: {
+      /* One of ulavacharu or pachi pulusu. Sambar is not here because it is
+         complimentary — it arrives without being chosen, which is what the
+         client means by a confirmed dish. */
+      chaaru: 1,
       sweets: 3,
       pickles: 2,
       hotsnacks: 2,

@@ -21,6 +21,7 @@ const KNOWN_LABELS = {
   southindiancurries: 'South Indian Curries',
   southindianfries: 'South Indian Fries',
   pappu: 'Pappu',
+  chaaru: 'Chaaru & Pulusu',
   icecreams: 'Ice Creams',
   mysorebonda: 'Mysore Bonda',
   complimentary: 'Complimentary',
