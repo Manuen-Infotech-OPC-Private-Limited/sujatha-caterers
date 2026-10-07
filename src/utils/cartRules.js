@@ -106,7 +106,10 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
     },
     /* "Grand Feast" to a customer — see data/packages.js. */
     Premium: {
-      chaaru: 0,
+      /* One of ulavacharu or pachi pulusu, on the Grand Feast. Also on the
+         Premium Feast above it — a top tier that offers less than the one
+         below it is not a top tier. */
+      chaaru: 1,
       sweets: 2,
       powders: 0,
       pickles: 2,
