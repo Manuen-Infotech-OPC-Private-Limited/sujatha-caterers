@@ -36,8 +36,8 @@ const PACKAGES = PACKAGE_KEYS;
 const TIER_NOTES = {
   Basic: 'Idly, vada and upma at breakfast. One dish from each lunch course.',
   Classic: 'Adds pongal and a sweet. Two sweets and two pickles at lunch.',
-  Premium: 'Adds dosa, Indian breads, ice cream and paan. Two of most lunch courses.',
-  Luxury: 'Adds mysore bonda, with tea and coffee included. Three sweets and the podis.',
+  Premium: 'Adds dosa, Indian breads, ice cream and paan. Two flavoured rices at lunch.',
+  Luxury: 'Adds mysore bonda, with tea and coffee included. Three sweets, two rices and a podi.',
 };
 
 /*

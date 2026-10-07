@@ -102,31 +102,37 @@ export function getCategoryLimit(mealType, selectedPackage, category) {
       indianbreads: 0,
       complimentary: 0,
     },
+    /* "Grand Feast" to a customer — see data/packages.js. */
     Premium: {
       sweets: 2,
       powders: 0,
       pickles: 2,
       hotsnacks: 2,
       indianbreads: 1,
-      flavoredrice: 1,
+      // October 2026: two flavoured rices, and one each of the fry, the curry
+      // and the pappu. Fewer picks on three courses, more on one.
+      flavoredrice: 2,
       northindian: 1,
-      southindiancurries: 2,
-      pappu: 2,
-      southindianfries: 2,
+      southindiancurries: 1,
+      pappu: 1,
+      southindianfries: 1,
       icecreams: 1,
       paan: 1,
       complimentary: 0,
     },
+    /* "Premium Feast" to a customer — see data/packages.js. */
     Luxury: {
       sweets: 3,
       pickles: 2,
       hotsnacks: 2,
-      powders: 2,
+      // October 2026: one podi, one curry, one pappu. The tier still leads on
+      // sweets, breads and the two rices.
+      powders: 1,
       indianbreads: 1,
       flavoredrice: 2,
       northindian: 2,
-      southindiancurries: 2,
-      pappu: 2,
+      southindiancurries: 1,
+      pappu: 1,
       southindianfries: 2,
       icecreams: 1,
       paan: 1,
