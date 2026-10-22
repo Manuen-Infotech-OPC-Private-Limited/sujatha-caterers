@@ -1,4 +1,37 @@
 /*
+ * The order the courses are shown in, by the client's instruction of
+ * 22 Oct 2026:
+ *
+ *   Sweets · Hots · Flavoured Rice · Pappu · Fry · South Indian Curries ·
+ *   Pickles
+ *
+ * They listed seven; the menu has more. Anything not named keeps its place
+ * behind them in the order the API sent, and Complimentary stays last of all
+ * — it is not a course you choose, it is what comes anyway.
+ *
+ * Note the fry sits BEFORE the curries, reversing how the menu was built.
+ * That is the client's order, so it is ours.
+ *
+ * Mirrors kCourseOrder in the Flutter app's lib/utils/cart_rules.dart.
+ */
+export const COURSE_ORDER = [
+  'sweets',
+  'hotsnacks',
+  'flavoredrice',
+  'pappu',
+  'southindianfries',
+  'southindiancurries',
+  'pickles',
+];
+
+export function courseRank(category) {
+  const key = String(category || '').toLowerCase();
+  if (key === 'complimentary') return 1000;
+  const i = COURSE_ORDER.indexOf(key);
+  return i === -1 ? 500 : i;
+}
+
+/*
  * Per-package course limits. This file is the source of truth for these
  * numbers; service/cartRules.js (server) and lib/utils/cart_rules.dart
  * (Flutter) are copies and must be changed in the same commit. The server

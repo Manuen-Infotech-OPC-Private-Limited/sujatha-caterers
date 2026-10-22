@@ -15,6 +15,7 @@ import {
   VARIANTS,
   RICE_VARIETIES,
   RICE_PRICE,
+  PREMIUM_PRICE,
   PACKING_TYPES,
   DEFAULT_PACKING,
   VARIANT_EXTRAS,
@@ -32,8 +33,11 @@ import {
  * not per variety, which is why quantity for this box is a map and not a
  * number.
  */
-const MIN_RICE_BOXES = 1;
-const MAX_RICE_BOXES = 10;
+// Shares the thali boxes' floor and ceiling since the client set a 25-box
+// minimum across the whole product on 22 Oct 2026. Was 1 to 10, both now
+// below the floor.
+const MAX_RICE_BOXES = 100;
+const MIN_RICE_BOXES = 25;
 
 const selectClass =
   'w-full rounded-xl border-2 border-sand-300 bg-white px-4 py-3.5 text-[1.0625rem] text-sand-900 outline-none transition-all duration-200 hover:border-sand-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-500/15';
@@ -47,16 +51,36 @@ const Gate = ({ children }) => (
 const MealBox = () => {
   const { user } = useAuthContext(); // ✅ get logged-in user
 
-  const [selectedVariant, setSelectedVariant] = useState(199);
+  const [selectedVariant, setSelectedVariant] = useState(PREMIUM_PRICE);
   const [packingType, setPackingType] = useState(DEFAULT_PACKING);
   const [deliveryMode, setDeliveryMode] = useState('pickup'); // 'pickup' | 'door'
 
   const TAX_RATE = 0.025; // 2.5% CGST + 2.5% SGST = 5% Total
-  const MIN_QTY = 1;
-  const MAX_QTY = 15;
+  // Meal Everyday is a bulk order: 25 boxes minimum by the client's
+  // instruction of 22 Oct 2026. Must match MEALBOX_MIN_QTY / MAX_QTY on the
+  // server, or the customer is charged and then refused.
+  const MIN_QTY = 25;
+  const MAX_QTY = 100;
 
   const API = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
+
+  /* The photograph the client uploads in the admin. Empty until they do, and
+     empty if the request fails — the bundled picture covers both, so this is
+     deliberately fire-and-forget rather than something the page waits on. */
+  const [uploadedImage, setUploadedImage] = useState('');
+  useEffect(() => {
+    let live = true;
+    fetch(`${API}/api/settings`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => {
+        if (live && d?.mealBoxImageUrl) setUploadedImage(d.mealBoxImageUrl);
+      })
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, [API]);
 
   const [quantity, setQuantity] = useState(MIN_QTY);
   // variety -> count, for the ₹99 rice box only.
@@ -250,7 +274,7 @@ const MealBox = () => {
         amount: data.amount,
         currency: 'INR',
         name: 'Sujatha Caterers',
-        description: 'South Indian Veg Meal Box',
+        description: 'South Indian Veg Meal Everyday',
         order_id: data.orderId,
         theme: { color: '#e63946' },
 
@@ -353,7 +377,7 @@ const MealBox = () => {
       setTimeout(() => {
         navigate('/');
       }, 500);
-      toast.success('Meal Box order placed successfully!');
+      toast.success('Meal Everyday order placed successfully!');
     } catch (err) {
       console.error(err);
       toast.error('Order placement failed');
@@ -429,14 +453,18 @@ const MealBox = () => {
           <div className="min-w-0">
             <div className="overflow-hidden rounded-3xl border border-sand-200 bg-white shadow-card">
               <img
-                src={mealBoxImg}
+                src={uploadedImage || mealBoxImg}
+                onError={(e) => {
+                  // Fall back to the bundled picture if theirs will not load.
+                  e.currentTarget.src = mealBoxImg;
+                }}
                 alt="South Indian veg meal box"
                 className="aspect-[16/10] w-full object-cover"
               />
             </div>
 
             <h1 className="mt-7 font-display text-4xl text-sand-900 sm:text-5xl">
-              South Indian Veg Meal Box
+              South Indian Veg Meal Everyday
             </h1>
             <p className="mt-3 max-w-xl text-[1.0625rem] leading-relaxed text-sand-600">
               An authentic South Indian vegetarian meal made with fresh

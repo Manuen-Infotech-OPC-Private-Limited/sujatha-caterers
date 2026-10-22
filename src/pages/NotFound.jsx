@@ -5,7 +5,7 @@ import Button from '../components/ui/Button';
 
 const LINKS = [
   { label: 'Browse the menu', to: '/menu' },
-  { label: 'Meal boxes', to: '/mealbox' },
+  { label: 'Meal Everyday', to: '/mealbox' },
   { label: 'Contact us', to: '/contact' },
 ];
 

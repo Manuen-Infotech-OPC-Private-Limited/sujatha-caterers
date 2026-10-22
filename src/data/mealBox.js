@@ -13,8 +13,11 @@
  * for the numbers.
  */
 
-export const CLASSIC_PRICE = 179;
-export const PREMIUM_PRICE = 199;
+// 22 Oct 2026: 179 → 200 and 199 → 220. The price IS the variant key the
+// server validates, so all three codebases move together or the customer is
+// charged and then refused.
+export const CLASSIC_PRICE = 200;
+export const PREMIUM_PRICE = 220;
 export const RICE_PRICE = 99;
 
 /*
@@ -64,31 +67,32 @@ export const packingLabel = (id) =>
  */
 export const MEALBOX_BASE = [
   'Sweet',
+  'Hot',
   'Pappu',
   'Fry',
   'Curry',
-  'Rice',
-  'Pickle',
   'Papad',
+  'Vadiyalu',
+  'Ghee',
+  'Salt',
+  'Pickle',
   'Sambar',
   'Curd',
-  'Salt',
-  'Tissue',
-  'Cutlery',
+  'Buffet plates',
+  'Napkins',
+  'Water bottle',
 ];
 
 /*
  * What each variant adds on top of the base.
  *
- * Both boxes now say "Flavour Rice" — the ₹199 because the client renamed its
- * veg biryani, the ₹179 because the client renamed its pulihora. They are not
- * the same dish on the day; the kitchen sends what suits, exactly as it already
- * does for "Raita (or) Kurma". What still separates the two boxes is the hot
- * snack and the vadiyalu.
+ * 22 Oct 2026: the rice is named again rather than both boxes saying "Flavour
+ * Rice". The hot snack and the vadiyalu moved into the base, because the
+ * client added them to Classic too, so they no longer tell the boxes apart.
  */
 export const VARIANT_EXTRAS = {
-  [PREMIUM_PRICE]: ['Flavour Rice', 'Hot Snack', 'Raita (or) Kurma', 'Vadiyalu'],
-  [CLASSIC_PRICE]: ['Flavour Rice', 'Raita (or) Kurma'],
+  [PREMIUM_PRICE]: ['Biryani', 'Veg Kurma', 'Raitha'],
+  [CLASSIC_PRICE]: ['Pulihara'],
 };
 
 /*
@@ -111,12 +115,12 @@ export const VARIANTS = [
   {
     price: PREMIUM_PRICE,
     name: 'Premium',
-    blurb: 'Flavour rice with a hot snack and vadiyalu',
+    blurb: 'Biryani with veg kurma and raitha',
   },
   {
     price: CLASSIC_PRICE,
     name: 'Classic',
-    blurb: 'Flavour rice with raita or kurma',
+    blurb: 'Pulihara with the full thali',
   },
   {
     price: RICE_PRICE,

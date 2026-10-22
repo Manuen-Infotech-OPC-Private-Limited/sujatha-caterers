@@ -7,7 +7,11 @@
  * order, so a client left on 30 takes the payment and then has it rejected —
  * change all three together.
  */
-export const MIN_GUESTS = 50;
+// 22 Oct 2026: the client's catering floor is 100. This was still 50 — the
+// server moved to 25 in October and this was never brought along, so the
+// website has been quoting a minimum nothing enforced. The server reads the
+// live figure from app settings; this is the copy shown in marketing text.
+export const MIN_GUESTS = 100;
 
 export const PRICES = {
   Breakfast: {

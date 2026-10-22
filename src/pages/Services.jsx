@@ -51,7 +51,7 @@ const PICKUP_LOCATIONS = PICKUP_LABELS;
 /* The two rows people actually compare before choosing. */
 const COMPARISON = [
   { label: 'Best for', catering: 'Weddings, poojas, corporate events', mealbox: 'Office lunches, small gatherings' },
-  { label: 'Typical size', catering: `${MIN_GUESTS} guests and up`, mealbox: '1 – 15 boxes' },
+  { label: 'Typical size', catering: `${MIN_GUESTS} guests and up`, mealbox: '25 – 100 boxes' },
   { label: 'Price', catering: 'From ₹100 per plate', mealbox: '₹99, ₹179 or ₹199 per box' },
   { label: 'How it works', catering: 'Build a menu across four packages', mealbox: 'Pick a variant, pick up or get it delivered' },
 ];
@@ -91,7 +91,7 @@ const Services = () => {
             <div className="hidden border-b border-sand-200 md:block" />
             {[
               { img: cateringImg, name: 'Catering', to: '/catering/order', cta: 'Start an order' },
-              { img: mealboximg, name: 'Meal Box', to: '/mealbox', cta: 'Order boxes' },
+              { img: mealboximg, name: 'Meal Everyday', to: '/mealbox', cta: 'Order boxes' },
             ].map((col) => (
               <div key={col.name} className="border-b border-sand-200 p-5 text-center">
                 <img
@@ -344,7 +344,7 @@ const Services = () => {
             </div>
 
             <div className="rounded-2xl border border-sand-200 bg-white p-6 shadow-card">
-              <h3 className="text-lg font-semibold text-sand-900">Meal boxes</h3>
+              <h3 className="text-lg font-semibold text-sand-900">Meal Everyday</h3>
               <p className="mt-2 text-[0.9375rem] text-sand-600">
                 Delivered to these pincodes:
               </p>

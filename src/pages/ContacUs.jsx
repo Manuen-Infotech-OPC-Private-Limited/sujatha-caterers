@@ -255,7 +255,7 @@ const ContactUs = () => {
             <div className="rounded-2xl border border-sand-200 bg-white p-4 shadow-card">
               <p className="text-sm text-sand-500">Business hours</p>
               <p className="mt-0.5 font-semibold text-sand-900">Mon – Sun, 8:00 AM – 9:00 PM</p>
-              <p className="mt-1 text-xs text-sand-500 italic">Applicable to Meal Box</p>
+              <p className="mt-1 text-xs text-sand-500 italic">Applicable to Meal Everyday</p>
             </div>
 
             <div className="flex items-center gap-3 rounded-2xl border border-sand-200 bg-white p-4 shadow-card">

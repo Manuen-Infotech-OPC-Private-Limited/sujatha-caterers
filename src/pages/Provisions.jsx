@@ -10,10 +10,9 @@ import Field from '../components/ui/Field';
 import { PICKUP_POINTS } from '../utils/pickupPoints';
 import {
   CATALOGUE,
-  GRAMS_PER_STEP,
+  rateFor,
   MAX_GRAMS_PER_ORDER,
-  MIN_GRAMS_PER_ITEM,
-  RATE_PER_500G,
+
   formatKg,
   priceLines,
 } from '../utils/provisions';
@@ -67,10 +66,13 @@ const Provisions = () => {
      whole order still fits. Mirrors the server, which rejects the total. */
   const adjust = (kind, id, delta) => {
     const k = key(kind, id);
+    const { gramsPerStep } = rateFor(kind);
     const current = grams[k] || 0;
-    const next = current + delta * GRAMS_PER_STEP;
+    const next = current + delta * gramsPerStep;
 
-    if (next < MIN_GRAMS_PER_ITEM) {
+    // The step is also the minimum, so one tap down from a single step
+    // clears the line rather than leaving a part-step the server rejects.
+    if (next < gramsPerStep) {
       setGrams((prev) => {
         const copy = { ...prev };
         delete copy[k];
@@ -216,7 +218,10 @@ const Provisions = () => {
   return (
     <PageShell>
       <PageHero eyebrow="Pickles & Powders" title="Made in our kitchen, sold by weight">
-        Andhra pickles and podis at ₹{RATE_PER_500G} per {formatKg(GRAMS_PER_STEP)}.
+        Pickles ₹{rateFor('pickle').ratePerStep} per{' '}
+        {formatKg(rateFor('pickle').gramsPerStep)}, powders{' '}
+        ₹{rateFor('powder').ratePerStep} per{' '}
+        {formatKg(rateFor('powder').gramsPerStep)}.
         Collection only, from any of our three pickup points.
       </PageHero>
 
@@ -241,7 +246,8 @@ const Provisions = () => {
                         <div className="min-w-0 flex-1">
                           <p className="truncate font-semibold text-sand-900">{item.name}</p>
                           <p className="text-sm text-sand-600">
-                            ₹{RATE_PER_500G} per {formatKg(GRAMS_PER_STEP)}
+                            ₹{rateFor(group.kind).ratePerStep} per{' '}
+                            {formatKg(rateFor(group.kind).gramsPerStep)}
                           </p>
                         </div>
 
@@ -283,7 +289,7 @@ const Provisions = () => {
 
               {lines.length === 0 ? (
                 <p className="mt-4 text-[0.9375rem] text-sand-600">
-                  Nothing chosen yet. Minimum {formatKg(MIN_GRAMS_PER_ITEM)} per item.
+                  Nothing chosen yet.
                 </p>
               ) : (
                 <ul className="mt-4 space-y-1.5 text-[0.9375rem]">
@@ -293,7 +299,9 @@ const Provisions = () => {
                         {l.name} · {formatKg(l.grams)}
                       </span>
                       <span className="tabular-nums text-sand-900">
-                        ₹{(l.grams / GRAMS_PER_STEP) * RATE_PER_500G}
+                        ₹
+                        {(l.grams / rateFor(l.kind).gramsPerStep) *
+                          rateFor(l.kind).ratePerStep}
                       </span>
                     </li>
                   ))}

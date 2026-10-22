@@ -311,7 +311,7 @@ const Profile = () => {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <p className="font-display text-xl text-sand-900">
-                            {isMealBox ? 'Meal Box' : 'Catering'}
+                            {isMealBox ? 'Meal Everyday' : 'Catering'}
                           </p>
                           <p className="mt-0.5 text-sm text-sand-500">
                             #{order._id.slice(-6)} · ordered{' '}

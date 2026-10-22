@@ -200,8 +200,8 @@ const Home = () => {
             },
             {
               img: mealboxImg,
-              tag: 'Meal boxes',
-              title: 'Meal boxes from ₹179',
+              tag: 'Meal Everyday',
+              title: 'Meal Everyday from ₹179',
               body: 'Individually packed meals, or a single rice bowl. Pick up from three points across Guntur, or get them delivered.',
               cta: 'Browse meal boxes',
               to: '/mealbox',

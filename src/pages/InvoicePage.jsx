@@ -115,7 +115,7 @@ const InvoicePage = () => {
 
             {order.orderType === "mealbox" && (
                 <>
-                    <p><strong>Type:</strong> Meal Box</p>
+                    <p><strong>Type:</strong> Meal Everyday</p>
                     <p><strong>Variant:</strong> {order.mealBox.variant || 'Standard'}</p>
                     <p><strong>Qty:</strong> {order.mealBox.quantity}</p>
                     <p><strong>Packing:</strong> {packingLabel(order.mealBox.packingType)}</p>

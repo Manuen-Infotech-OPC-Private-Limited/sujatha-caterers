@@ -4,7 +4,7 @@ import { BUSINESS } from '../data/business';
 
 const LINKS = [
   { label: 'Menu', to: '/menu' },
-  { label: 'Meal boxes', to: '/mealbox' },
+  { label: 'Meal Everyday', to: '/mealbox' },
   { label: 'Services', to: '/services' },
   { label: 'About us', to: '/about' },
   { label: 'Contact', to: '/contact' },

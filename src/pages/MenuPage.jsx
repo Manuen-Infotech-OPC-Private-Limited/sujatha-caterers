@@ -8,7 +8,7 @@ import Button from '../components/ui/Button';
 import useAuth from '../hooks/useAuth';
 import { useMenu } from '../utils/MenuContext';
 import { PRICES } from '../utils/pricing';
-import { getCategoryLimit } from '../utils/cartRules';
+import { getCategoryLimit, courseRank } from '../utils/cartRules';
 import { packageLabel } from '../data/packages';
 import { formatCategory } from '../utils/categoryLabels';
 
@@ -66,6 +66,8 @@ const MenuPage = () => {
      written out by hand, so it tracks the real limits. */
   const included = useMemo(() => {
     const entries = Object.keys(menuData)
+      // Same course order the ordering flow uses — see courseRank.
+      .sort((a, b) => courseRank(a) - courseRank(b))
       .map((category) => ({
         category,
         limit: getCategoryLimit(selectedMealType, selectedPackage, category),

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import DishCard from './DishCard';
 import { useCart } from '../../utils/cartContext';
-import { getCategoryLimit } from '../../utils/cartRules';
+import { getCategoryLimit, courseRank } from '../../utils/cartRules';
 import { formatCategory } from '../../utils/categoryLabels';
 import { toast } from 'react-toastify';
 import { packageLabel } from '../../data/packages';
@@ -73,7 +73,10 @@ const CollapsibleMenu = ({ menuData, selectedPackage, selectedMealType }) => {
         setCategoryItem(category, item, limit);
     };
 
-    const entries = Object.entries(menuData);
+    // The client's course order, Complimentary last — see courseRank.
+    const entries = Object.entries(menuData).sort(
+        ([a], [b]) => courseRank(a) - courseRank(b)
+    );
 
     return (
         <div className="font-sans">
