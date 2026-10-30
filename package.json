@@ -6,7 +6,6 @@
     "@lottiefiles/react-lottie-player": "^3.6.0",
     "axios": "^1.10.0",
     "firebase": "^12.7.0",
-    "html2pdf.js": "^0.10.3",
     "js-cookie": "^3.0.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

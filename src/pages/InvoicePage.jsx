@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import { formatCategory } from '../utils/categoryLabels';
 import { useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/logos/logo-nobg-sm.webp";
@@ -11,7 +11,6 @@ import { packingLabel } from '../data/mealBox';
 const InvoicePage = () => {
   const { state } = useLocation();
   const navigate = useNavigate();
-  const invoiceRef = useRef();
 
   if (!state || !state.order || !state.user) {
     return (
@@ -35,36 +34,46 @@ const InvoicePage = () => {
   const remainingAmount = totalAmount - paidAmount;
 
   const [preparing, setPreparing] = useState(false);
+  const [downloadError, setDownloadError] = useState("");
 
+  /*
+   * The PDF comes from the server, which is the only thing that renders one
+   * now. This page used to build its own with html2pdf, which rasterised the
+   * markup below through html2canvas: the result was an image of an invoice,
+   * several hundred KB a page with no selectable text, and a second layout
+   * free to drift away from the app's. It also dragged html2canvas and jsPDF
+   * into the bundle for every visitor browsing the menu.
+   *
+   * The markup below stays as the on-screen preview; the downloaded document
+   * is whatever /api/orders/:id/invoice returns.
+   */
   const handleDownload = async () => {
-    const opt = {
-      margin: 0.5,
-      filename: `${user.name}-invoice.pdf`,
-      /* Quality barely moves the file size here -- the page is text on white,
-         which JPEG handles badly -- so keep it high rather than trade away
-         sharpness on a document people print. */
-      image: { type: "jpeg", quality: 0.92 },
-      html2canvas: { scale: 2, scrollY: 0, useCORS: true },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-      /*
-       * Without this html2pdf rasterises the whole invoice and slices the
-       * image at fixed page heights, cutting rows through the middle of the
-       * text. `avoid` moves any matched element that would straddle a
-       * boundary onto the next page instead.
-       */
-      pagebreak: {
-        mode: ["css", "legacy"],
-        avoid: [".pdf-row", ".pdf-keep-together"],
-      },
-    };
-    /* html2pdf drags in html2canvas and jsPDF, and sat in the main bundle for
-       every visitor browsing the menu: importing it here instead takes the
-       main chunk from 1794KB to 1061KB (496KB to 291KB gzipped). It loads
-       only once someone actually asks for the PDF. */
     setPreparing(true);
+    setDownloadError("");
     try {
-      const { default: html2pdf } = await import("html2pdf.js");
-      await html2pdf().set(opt).from(invoiceRef.current).save();
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/orders/${order._id}/invoice?source=web`,
+        { credentials: "include" }
+      );
+      if (!res.ok) {
+        throw new Error(
+          res.status === 401 || res.status === 403
+            ? "Please sign in again to download this invoice."
+            : "We couldn't prepare that invoice. Please try again."
+        );
+      }
+      const blob = await res.blob();
+      const href = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = href;
+      a.download = `Invoice-${order._id}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      /* Revoking immediately can cancel the download in some browsers. */
+      setTimeout(() => URL.revokeObjectURL(href), 10000);
+    } catch (err) {
+      setDownloadError(err.message || "Something went wrong.");
     } finally {
       setPreparing(false);
     }
@@ -82,7 +91,6 @@ const InvoicePage = () => {
     <PageShell>
       <div className="px-5 py-10 sm:px-8" style={{ fontFamily: "Arial, sans-serif" }}>
       <div
-        ref={invoiceRef}
         style={{
           maxWidth: "700px",
           margin: "auto",
@@ -190,10 +198,14 @@ const InvoicePage = () => {
             <>
                 <h3 style={{ marginTop: "1rem" }}>Menu Items</h3>
                 {/*
-                  Deliberately divs rather than a table. html2pdf keeps an
-                  element off a page boundary by pushing it down with margin,
-                  and margin does nothing on a <tr> — which is why category
-                  headers were being sliced in half across pages.
+                  Divs rather than a table, originally because html2pdf could
+                  only keep an element off a page boundary by pushing it down
+                  with margin, which does nothing on a <tr>. The PDF is built
+                  on the server now and this is only the on-screen preview, so
+                  the constraint is gone; the markup is left as it is rather
+                  than rewritten for no visible gain. The pdf-row and
+                  pdf-keep-together classes below are inert for the same
+                  reason.
                 */}
                 <div style={{ marginTop: "0.5rem" }}>
                     {Object.entries(order.cart).map(([category, items]) => {
@@ -306,6 +318,11 @@ const InvoicePage = () => {
         </Button>
         <Button variant="secondary" onClick={() => navigate(-1)}>Back</Button>
       </div>
+      {downloadError && (
+        <p className="mx-auto mt-3 max-w-[700px] text-center text-sm text-brand-600">
+          {downloadError}
+        </p>
+      )}
       </div>
     </PageShell>
   );
