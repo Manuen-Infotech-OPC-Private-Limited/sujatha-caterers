@@ -60,7 +60,7 @@ const MealBox = () => {
   // instruction of 22 Oct 2026. Must match MEALBOX_MIN_QTY / MAX_QTY on the
   // server, or the customer is charged and then refused.
   const MIN_QTY = 25;
-  const MAX_QTY = 100;
+  const MAX_QTY = 50;
 
   const API = process.env.REACT_APP_API_URL;
   const navigate = useNavigate();
