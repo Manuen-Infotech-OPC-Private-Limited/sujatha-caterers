@@ -1,6 +1,6 @@
 import React from 'react';
 import loginBg from '../../assets/logos/loginbg.webp';
-import logonoBg from '../../assets/logos/logo-nobg.png';
+import logonoBg from '../../assets/logos/logo-nobg-sm.webp';
 
 /*
  * Shared split-screen shell for /login and /register: food photography on the

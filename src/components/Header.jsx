@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import logo from '../assets/logos/logo-nobg.png';
+import logo from '../assets/logos/logo-nobg-sm.webp';
 import { toast } from 'react-toastify';
 import { useAuthContext } from '../utils/AuthContext';
 

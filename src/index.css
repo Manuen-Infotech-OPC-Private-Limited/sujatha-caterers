@@ -137,6 +137,9 @@
    keeps the motif the client likes but drops the blur and the wash, sitting
    far enough back to stay a texture rather than a background image.
 
+   It sits at 5% opacity, where none of the fine detail survives, so it is a
+   1000px webp (182KB) rather than the 1440px 893KB master.
+
    To remove it site-wide, delete the `doodle-texture` class from the pages
    that use it — nothing else depends on this rule.
 --------------------------------------------------------------------------- */
@@ -150,7 +153,7 @@
     content: "";
     position: absolute;
     inset: 0;
-    background: url('./assets/logos/doodle.png') center / cover no-repeat;
+    background: url('./assets/logos/doodle-sm.webp') center / cover no-repeat;
     opacity: 0.05;
     pointer-events: none;
     z-index: -1;
