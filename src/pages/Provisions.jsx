@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
 import { useLocation } from '../utils/LocationContext';
@@ -9,10 +9,9 @@ import Button from '../components/ui/Button';
 import Field from '../components/ui/Field';
 import { PICKUP_POINTS } from '../utils/pickupPoints';
 import {
-  CATALOGUE,
   rateFor,
-  MAX_GRAMS_PER_ORDER,
-
+  DEFAULT_MAX_GRAMS_PER_ORDER,
+  catalogueFromJson,
   formatKg,
   priceLines,
 } from '../utils/provisions';
@@ -32,6 +31,42 @@ const Provisions = () => {
   const API = process.env.REACT_APP_API_URL;
 
   // key -> grams. Absent means not ordered; 0 is never stored.
+  /* The catalogue is fetched now. An empty list is NOT an acceptable
+     rendering of "we could not load it": it reads as "we sell nothing" and
+     loses the order without telling the customer anything went wrong. */
+  const [catalogue, setCatalogue] = useState(null);
+  const [maxGrams, setMaxGrams] = useState(DEFAULT_MAX_GRAMS_PER_ORDER);
+  const [catalogueError, setCatalogueError] = useState('');
+  const [catalogueLoading, setCatalogueLoading] = useState(true);
+
+  const loadCatalogue = React.useCallback(async () => {
+    setCatalogueLoading(true);
+    setCatalogueError('');
+    try {
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/api/provisions`
+      );
+      if (!res.ok) {
+        throw new Error(
+          res.status === 503
+            ? 'Our pickles and podis list is briefly unavailable. Please try again in a moment.'
+            : "We couldn't load the list. Please try again."
+        );
+      }
+      const json = await res.json();
+      setCatalogue(catalogueFromJson(json));
+      if (json?.maxGramsPerOrder) setMaxGrams(Number(json.maxGramsPerOrder));
+    } catch (err) {
+      setCatalogueError(err.message || "We couldn't load the list.");
+    } finally {
+      setCatalogueLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadCatalogue();
+  }, [loadCatalogue]);
+
   const [grams, setGrams] = useState({});
   const [pickupPoint, setPickupPoint] = useState(PICKUP_POINTS[0].id);
   const [pickupDate, setPickupDate] = useState('');
@@ -46,7 +81,7 @@ const Provisions = () => {
 
   const lines = useMemo(
     () =>
-      CATALOGUE.flatMap((group) =>
+      (catalogue || []).flatMap((group) =>
         group.items
           .filter((item) => grams[key(group.kind, item.id)] > 0)
           .map((item) => ({
@@ -59,14 +94,17 @@ const Provisions = () => {
     [grams]
   );
 
-  const priced = useMemo(() => priceLines(lines), [lines]);
-  const atCap = priced.totalGrams >= MAX_GRAMS_PER_ORDER;
+  const priced = useMemo(
+    () => priceLines(lines, catalogue || []),
+    [lines, catalogue]
+  );
+  const atCap = priced.totalGrams >= maxGrams;
 
   /* The cap is on the order, not the item, so a step is only allowed if the
      whole order still fits. Mirrors the server, which rejects the total. */
   const adjust = (kind, id, delta) => {
     const k = key(kind, id);
-    const { gramsPerStep } = rateFor(kind);
+    const { gramsPerStep } = rateFor(catalogue || [], kind);
     const current = grams[k] || 0;
     const next = current + delta * gramsPerStep;
 
@@ -81,8 +119,8 @@ const Provisions = () => {
       return;
     }
 
-    if (priced.totalGrams - current + next > MAX_GRAMS_PER_ORDER) {
-      toast.info(`Orders are limited to ${formatKg(MAX_GRAMS_PER_ORDER)} in total.`);
+    if (priced.totalGrams - current + next > maxGrams) {
+      toast.info(`Orders are limited to ${formatKg(maxGrams)} in total.`);
       return;
     }
 
@@ -218,17 +256,37 @@ const Provisions = () => {
   return (
     <PageShell>
       <PageHero eyebrow="Pickles & Powders" title="Made in our kitchen, sold by weight">
-        Pickles ₹{rateFor('pickle').ratePerStep} per{' '}
-        {formatKg(rateFor('pickle').gramsPerStep)}, powders{' '}
-        ₹{rateFor('powder').ratePerStep} per{' '}
-        {formatKg(rateFor('powder').gramsPerStep)}.
+        {/* Built from the catalogue rather than naming pickles and powders:
+            the client adds and prices categories themselves now, so a
+            sentence listing two by name would be wrong the first time they
+            add a third. */}
+        {(catalogue || [])
+          .map(
+            (g) =>
+              `${g.label} ₹${g.ratePerStep} per ${formatKg(g.gramsPerStep)}`
+          )
+          .join(', ')}
+        .
         Collection only, from any of our three pickup points.
       </PageHero>
 
       <section className="mx-auto max-w-7xl px-5 py-10 sm:px-8 lg:py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr_24rem] lg:gap-10">
           <div className="min-w-0 space-y-8">
-            {CATALOGUE.map((group) => (
+            {catalogueLoading ? (
+              <p className="text-[0.9375rem] text-sand-600">Loading…</p>
+            ) : catalogueError || (catalogue || []).length === 0 ? (
+              <div className="rounded-xl border border-sand-200 bg-white p-6 text-center">
+                <p className="text-[0.9375rem] text-sand-700">
+                  {catalogueError ||
+                    'Nothing is on sale here just now. Please check back shortly.'}
+                </p>
+                <Button className="mx-auto mt-4 sm:w-auto sm:px-6" onClick={loadCatalogue}>
+                  Try again
+                </Button>
+              </div>
+            ) : null}
+            {(catalogue || []).map((group) => (
               <div key={group.kind}>
                 <h2 className="font-display text-2xl text-sand-900">{group.label}</h2>
                 <p className="mt-1 text-[0.9375rem] text-sand-600">{group.blurb}</p>
