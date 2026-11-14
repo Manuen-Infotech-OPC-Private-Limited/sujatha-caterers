@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 // Aliased: react-router's useLocation above is the URL, not the customer.
 import { useLocation as useUserLocation } from '../utils/LocationContext';
 import { PRICES, MIN_GUESTS } from '../utils/pricing';
+import { DEFAULT_RULES, earliestCateringDate, fetchOrderRules, noticeLabel } from '../utils/orderDates';
 import { packageLabel } from '../data/packages';
 import { toast } from 'react-toastify';
 import { formatCategory } from '../utils/categoryLabels';
@@ -85,8 +86,14 @@ const ReviewOrder = () => {
   const [loadingPayment, setLoadingPayment] = useState(false);
 
   const API = process.env.REACT_APP_API_URL;
-  const today = new Date();
-  const minDate = today.toISOString().split('T')[0];
+  /* The kitchen's rules (server: service/orderDates.js), in Indian time.
+     The calendar opens at the first date with the catering notice before
+     this meal is served; earlier dates are not offered at all. */
+  const [rules, setRules] = useState(DEFAULT_RULES);
+  useEffect(() => {
+    fetchOrderRules(API).then(setRules);
+  }, [API]);
+  const minDate = earliestCateringDate(selectedMealType, rules.cateringNoticeHours);
 
   const maxDateObj = new Date();
   maxDateObj.setMonth(maxDateObj.getMonth() + 3);
@@ -224,6 +231,16 @@ const ReviewOrder = () => {
       return;
     }
 
+    // Re-checked, not trusted from the calendar: a page left open overnight
+    // still holds the dates it offered yesterday.
+    const earliest = earliestCateringDate(selectedMealType, rules.cateringNoticeHours);
+    if (deliveryDate < earliest) {
+      toast.error(
+        `Catering needs at least ${noticeLabel(rules.cateringNoticeHours)}'s notice. The earliest date for ${String(selectedMealType).toLowerCase()} is ${earliest}.`
+      );
+      return;
+    }
+
     if (selectedDate > maxAllowedDate) {
       toast.error('Delivery date cannot be more than 3 months from today');
       return;
@@ -236,11 +253,16 @@ const ReviewOrder = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ amount: payableNow }),
+        // The order's type and date, so the server refuses a date it would
+        // not accept before any money moves.
+        body: JSON.stringify({
+          amount: payableNow,
+          check: { orderType: 'catering', deliveryDate, selectedMealType },
+        }),
       });
 
       const orderData = await orderRes.json();
-      if (!orderData?.orderId) throw new Error();
+      if (!orderData?.orderId) throw new Error(orderData?.error || 'Payment failed');
 
       const options = {
         key: orderData.key,
@@ -276,7 +298,7 @@ const ReviewOrder = () => {
       razorpay.open();
     } catch (err) {
       console.log(`error while creating payment: ${err}`);
-      toast.error('Payment failed');
+      toast.error(err?.message || 'Payment failed');
       setLoadingPayment(false);
     }
   };

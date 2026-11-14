@@ -11,6 +11,7 @@ import Field from '../components/ui/Field';
 import Spinner from '../components/ui/Spinner';
 import SavedAddressPicker from '../components/SavedAddressPicker';
 import { PICKUP_LABELS } from '../utils/pickupPoints';
+import { DEFAULT_RULES, earliestMealboxDate, fetchOrderRules, hourLabel, todayIst } from '../utils/orderDates';
 import {
   VARIANTS,
   RICE_VARIETIES,
@@ -22,9 +23,7 @@ import {
   boxContents,
   variantLabel,
   packingSurcharge,
-  earliestMealBoxDate,
   isoDate,
-  ORDER_START_HOUR,
 } from '../data/mealBox';
 
 /*
@@ -129,12 +128,18 @@ const MealBox = () => {
    * rejected on submit, because a customer who can pick today and is then told
    * no has been misled by the control they were given.
    */
-  const earliest = earliestMealBoxDate();
-  const minDate = isoDate(earliest);
+  /* The cut-off is the admin's hour in INDIAN time (server:
+     service/orderDates.js), not the browser's clock. */
+  const [rules, setRules] = useState(DEFAULT_RULES);
+  useEffect(() => {
+    fetchOrderRules(process.env.REACT_APP_API_URL).then(setRules);
+  }, []);
+  const minDate = earliestMealboxDate(rules.mealboxCutoffHour);
+  const earliest = new Date(`${minDate}T00:00`);
   const maxDateObj = new Date(earliest);
   maxDateObj.setMonth(maxDateObj.getMonth() + 3);
   const maxDate = isoDate(maxDateObj);
-  const closedForToday = new Date().getHours() >= ORDER_START_HOUR;
+  const closedForToday = minDate !== todayIst();
 
   useEffect(() => {
     if (user && deliveryMode === 'door') {
@@ -219,15 +224,13 @@ const MealBox = () => {
 
     /* Checked against the noon floor rather than against midnight, so a page
        left open across 12 o'clock cannot post a date it offered an hour ago. */
-    const selectedDate = new Date(deliveryDate);
-    selectedDate.setHours(0, 0, 0, 0);
-
-    if (selectedDate < earliestMealBoxDate()) {
+    // Read fresh, not from the render-time values: a page left open across
+    // the cut-off would otherwise accept, or explain, with stale ones.
+    const earliestNow = earliestMealboxDate(rules.mealboxCutoffHour);
+    if (deliveryDate < earliestNow) {
       toast.error(
-        // Read fresh, not from the render-time flag: a page left open across
-        // noon would otherwise explain the refusal with the wrong reason.
-        new Date().getHours() >= ORDER_START_HOUR
-          ? 'Orders for today closed at 12 noon — please choose tomorrow or later.'
+        earliestNow !== todayIst() && deliveryDate === todayIst()
+          ? `Orders for today closed at ${hourLabel(rules.mealboxCutoffHour)} — please choose tomorrow or later.`
           : 'Delivery date cannot be in the past'
       );
       return;
@@ -263,11 +266,14 @@ const MealBox = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ amount: totalPrice }),
+        body: JSON.stringify({
+          amount: totalPrice,
+          check: { orderType: 'mealbox', deliveryDate },
+        }),
       });
 
       const data = await res.json();
-      if (!data?.orderId) throw new Error();
+      if (!data?.orderId) throw new Error(data?.error || 'Payment initiation failed');
 
       const options = {
         key: data.key,
@@ -315,7 +321,7 @@ const MealBox = () => {
       razorpay.open();
     } catch (err) {
       console.error(err);
-      toast.error('Payment initiation failed');
+      toast.error(err?.message || 'Payment initiation failed');
       setLoading(false);
     }
   };
@@ -680,8 +686,8 @@ const MealBox = () => {
                   onChange={(e) => setDeliveryDate(e.target.value)}
                   hint={
                     closedForToday
-                      ? "Today's orders closed at 12 noon — the earliest is tomorrow."
-                      : 'Orders for today close at 12 noon.'
+                      ? `Today's orders closed at ${hourLabel(rules.mealboxCutoffHour)} — the earliest is tomorrow.`
+                      : `Orders for today close at ${hourLabel(rules.mealboxCutoffHour)}.`
                   }
                 />
               </div>

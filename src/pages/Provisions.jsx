@@ -202,11 +202,14 @@ const Provisions = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ amount: priced.total }),
+        body: JSON.stringify({
+          amount: priced.total,
+          check: { orderType: 'provisions', deliveryDate: pickupDate },
+        }),
       });
 
       const data = await res.json();
-      if (!data?.orderId) throw new Error('Could not start the payment');
+      if (!data?.orderId) throw new Error(data?.error || 'Could not start the payment');
 
       const rzp = new window.Razorpay({
         key: data.key,
